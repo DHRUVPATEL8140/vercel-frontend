@@ -5,9 +5,40 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f7fa;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.container {
+  max-width: 1900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+/* Fix for dropdown hover effects */
+.dropdown:hover .dropdown-menu {
+  display: block !important;
+}
+
+/* Ensure proper spacing for all pages */
+.page-container {
+  padding: 24px 0;
+  min-height: calc(100vh - 80px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .page-container {
+    padding: 16px 0;
+  }
 }
