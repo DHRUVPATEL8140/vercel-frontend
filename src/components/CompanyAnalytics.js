@@ -111,7 +111,7 @@ export default function CompanyAnalytics() {
           <div style={styles.footerRow}>
             <div style={styles.footerCopyright}>
               <p style={styles.copyrightText}>
-                &copy; {new Date().getFullYear()} EPE Foam Pvt. Ltd. All Rights Reserved.
+                &copy; {new Date().getFullYear()} Infinite Pvt. Ltd. All Rights Reserved.
               </p>
             </div>
           </div>
@@ -125,11 +125,11 @@ const styles = {
   container: {
     maxWidth: "1600px",
     margin: "0 auto",
-    padding: "32px 24px",
+    padding: "15px 15px",
     fontFamily: "'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif",
     display: "flex",
     flexDirection: "column",
-    minHeight: "100vh",
+    minHeight: "80vh",
   },
   header: {
     marginBottom: "32px",
@@ -226,11 +226,11 @@ const styles = {
     backgroundColor: "#1a3a3a",
     background: "linear-gradient(135deg, #1a3a3a 0%, #0d1f1f 100%)",
     color: "#fff",
-    padding: "40px 0 20px",
+    padding: "20px 0 10px",
     marginTop: "auto",
   },
   footerContainer: {
-    maxWidth: "1200px",
+    maxWidth: "1800px",
     margin: "0 auto",
     padding: "0 24px",
   },

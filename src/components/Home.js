@@ -1,57 +1,19 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Form, Alert, Modal } from 'react-bootstrap';
-import api from '../api/axios';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Modal } from 'react-bootstrap';
 import { 
   BiEnvelope, BiPhone, BiMap, BiTime, 
-  BiLogoFacebook, BiLogoTwitter, BiLogoLinkedin, BiLogoInstagram 
+  BiLogoFacebook, BiLogoTwitter, BiLogoLinkedin, BiLogoInstagram,
+  BiChevronRight, BiCheck, BiAward, BiCog, BiGroup
 } from "react-icons/bi";
 
 const Home = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    company: '',
-    email: '',
-    phone: '',
-    product: '',
-    quantity: 100,
-    requirements: ''
-  });
-  
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [showMachineryModal, setShowMachineryModal] = useState(false);
   const [selectedMachinery, setSelectedMachinery] = useState(null);
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('inquiries/', formData);
-      if (response.status === 201) {
-        setSubmitted(true);
-        setFormData({
-          name: '',
-          company: '',
-          email: '',
-          phone: '',
-          product: '',
-          quantity: '',
-          requirements: ''
-        });
-      }
-    } catch (err) {
-      setError('Failed to submit inquiry. Please try again.');
-      console.error(err);
-    }
-  };
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   const openProductDetails = (product) => {
     setSelectedProduct(product);
@@ -91,8 +53,18 @@ const Home = () => {
     }
     window.location.href = '/epe-sheets';
   };
+
+  // Handle window resize for responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
-  // Enhanced Banner section with better padding
+  // Enhanced Banner section with responsive design
   const Banner = () => (
     <div 
       className="banner text-white text-center d-flex align-items-center" 
@@ -101,9 +73,9 @@ const Home = () => {
         background: "linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://engineeringcivil.org/wp-content/uploads/2023/08/pexels-photo-236709.jpeg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        minHeight: "60vh",
-        padding: "80px 0",
-        marginTop: "25px",
+        minHeight: isMobile ? "70vh" : "60vh",
+        padding: isMobile ? "60px 0" : "80px 0",
+        marginTop: isMobile ? "0" : "25px",
       }}
     >
       <Container>
@@ -112,13 +84,13 @@ const Home = () => {
           style={{
             maxWidth: "900px",
             margin: "0 auto",
-            padding: "20px",
+            padding: isMobile ? "10px" : "20px",
           }}
         >
           <div className="banner-badge mb-4">
             <span 
-              className="badge bg-warning text-dark px-4 py-2 fs-6"
-              style={{ fontSize: "0.9rem" }}
+              className="badge bg-warning text-dark px-3 py-2"
+              style={{ fontSize: isMobile ? "0.8rem" : "0.9rem" }}
             >
               WELCOME TO OUR SITE
             </span>
@@ -126,7 +98,7 @@ const Home = () => {
           <h3 
             className="fw-bold mb-4 text-shadow"
             style={{
-              fontSize: "2.5rem",
+              fontSize: isMobile ? "1.8rem" : "2.5rem",
               lineHeight: "1.2",
             }}
           >
@@ -135,21 +107,21 @@ const Home = () => {
           <p 
             className="lead mb-5 text-shadow"
             style={{
-              fontSize: "1.25rem",
+              fontSize: isMobile ? "1rem" : "1.25rem",
               lineHeight: "1.6",
             }}
           >
             Innovative Foam Solutions for Packaging, Insulation, and Protection
           </p>
           <div className="banner-stats mb-5">
-            <Row className="justify-content-center g-4">
+            <Row className="justify-content-center g-3">
               {[
                 { value: "5000+", label: "Tons Annual Capacity" },
                 { value: "95%", label: "Client Retention" },
                 { value: "20K+", label: "Sq.Ft Facility" },
                 { value: "ISO", label: "9001:2015 Certified" }
               ].map((stat, index) => (
-                <Col md={3} sm={6} key={index}>
+                <Col md={3} sm={6} xs={6} key={index}>
                   <div 
                     className="stat-item p-3"
                     style={{
@@ -158,17 +130,21 @@ const Home = () => {
                       backdropFilter: "blur(10px)",
                       border: "1px solid rgba(255,255,255,0.1)",
                       transition: "all 0.3s ease",
+                      marginBottom: isMobile ? "10px" : "0"
                     }}
                   >
                     <h3 
                       className="text-warning mb-1"
-                      style={{ fontSize: "1.5rem" }}
+                      style={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}
                     >
                       {stat.value}
                     </h3>
                     <p 
                       className="mb-0"
-                      style={{ fontSize: "0.9rem" }}
+                      style={{ 
+                        fontSize: isMobile ? "0.75rem" : "0.9rem",
+                        lineHeight: "1.2"
+                      }}
                     >
                       {stat.label}
                     </p>
@@ -177,15 +153,16 @@ const Home = () => {
               ))}
             </Row>
           </div>
-          <div className="banner-buttons">
+          <div className={`banner-buttons ${isMobile ? 'd-grid gap-2' : ''}`}>
             <Button 
               variant="warning" 
-              size="lg" 
+              size={isMobile ? "md" : "lg"}
               href="#products" 
-              className="me-3 fw-bold"
+              className={isMobile ? "" : "me-3 fw-bold"}
               style={{
-                padding: "10px 20px",
-                fontSize: "1rem",
+                padding: isMobile ? "8px 16px" : "10px 20px",
+                fontSize: isMobile ? "0.9rem" : "1rem",
+                width: isMobile ? "100%" : "auto"
               }}
             >
               Explore Products
@@ -193,12 +170,13 @@ const Home = () => {
             
             <Button 
               variant="outline-light" 
-              size="lg" 
+              size={isMobile ? "md" : "lg"}
               onClick={handlePlaceOrder} 
-              className="fw-bold"
+              className={`fw-bold ${isMobile ? "mt-2" : ""}`}
               style={{
-                padding: "10px 20px",
-                fontSize: "1rem",
+                padding: isMobile ? "8px 16px" : "10px 20px",
+                fontSize: isMobile ? "0.9rem" : "1rem",
+                width: isMobile ? "100%" : "auto"
               }}
             >
               Place Order
@@ -209,35 +187,35 @@ const Home = () => {
     </div>
   );
   
-  // Enhanced About section with consistent padding
+  // Enhanced About section with responsive design
   const AboutSection = () => (
-    <section className="py-6" id="about">
+    <section className={isMobile ? "py-4" : "py-6"} id="about">
       <Container>
-        <h2 className="section-title text-center mb-5">About EPE</h2>
-        <Row className="align-items-center mb-6">
-          <Col md={6} className="mb-4 mb-md-0 pe-md-5">
+        <h2 className="section-title text-center mb-4">About EPE</h2>
+        <Row className="align-items-center mb-5">
+          <Col md={6} className="mb-4 mb-md-0 pe-md-4">
             <div className="about-img-container position-relative rounded-3 overflow-hidden">
               <img 
                 src="https://5.imimg.com/data5/SELLER/Default/2024/4/412322962/UY/NN/OM/77241131/epe-hd-foam-sheet-1000x1000.jpg" 
                 alt="EPE Foam Production" 
                 className="img-fluid w-100"
-                style={{ height: '300px', objectFit: 'cover' }}
+                style={{ height: isMobile ? '200px' : '300px', objectFit: 'cover' }}
               />
-              <div className="overlay-content p-4">
-                <h5 className="text-white mb-0">Quality Manufacturing</h5>
-                <p className="text-white mb-0">Since 2022</p>
+              <div className="overlay-content p-3">
+                <h5 className="text-white mb-0" style={{fontSize: isMobile ? '1rem' : '1.25rem'}}>Quality Manufacturing</h5>
+                <p className="text-white mb-0" style={{fontSize: isMobile ? '0.8rem' : '1rem'}}>Since 2022</p>
               </div>
             </div>
           </Col>
-          <Col md={6} className="ps-md-5">
+          <Col md={6} className={isMobile ? "" : "ps-md-4"}>
             <div className="about-content">
-              <h3 className="text-primary mb-4">About EPE Foam</h3>
-              <p className="mb-4 fs-5">
+              <h3 className="text-primary mb-3" style={{fontSize: isMobile ? '1.5rem' : '1.75rem'}}>About EPE Foam</h3>
+              <p className="mb-3" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 EPE foam (Expanded Polyethylene) is a lightweight, flexible plastic foam that offers excellent
                 impact resistance, thermal insulation, and water resistance. At Infinity EPE Foam, we specialize
                 in manufacturing high-quality EPE foam products tailored to meet diverse industrial needs.
               </p>
-              <p className="mb-4 fs-5">
+              <p className="mb-0" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 Our state-of-the-art manufacturing facility in Halol, Gujarat, spans over 20,000 sq.ft and houses
                 the latest German extrusion technology. With an annual production capacity of 5,000 tons, we
                 serve clients across automotive, electronics, healthcare, and consumer goods industries.
@@ -246,32 +224,32 @@ const Home = () => {
           </Col>
         </Row>
         
-        <Row className="align-items-center mt-6">
-          <Col md={6} className="order-md-2 mb-4 mb-md-0 ps-md-5">
+        <Row className="align-items-center mt-5">
+          <Col md={6} className="order-md-2 mb-4 mb-md-0 ps-md-4">
             <div className="about-img-container position-relative rounded-3 overflow-hidden">
               <img 
                 src="https://m.media-amazon.com/images/I/71iHgQ+TztL._AC_SL1500_.jpg" 
                 alt="EPE Foam Manufacturing Process" 
                 className="img-fluid w-100"
-                style={{ height: '300px', objectFit: 'cover'}}
+                style={{ height: isMobile ? '200px' : '300px', objectFit: 'cover'}}
               />
-              <div className="overlay-content p-4">
-                <h5 className="text-white mb-0">Advanced Technology</h5>
-                <p className="text-white mb-0">German Extrusion</p>
+              <div className="overlay-content p-3">
+                <h5 className="text-white mb-0" style={{fontSize: isMobile ? '1rem' : '1.25rem'}}>Advanced Technology</h5>
+                <p className="text-white mb-0" style={{fontSize: isMobile ? '0.8rem' : '1rem'}}>German Extrusion</p>
               </div>
             </div>
           </Col>
-          <Col md={6} className="order-md-1 pe-md-5">
+          <Col md={6} className="order-md-1 pe-md-4">
             <div className="about-content">
-              <h4 className="mb-4 fs-3">Why Choose Our EPE Foam?</h4>
-              <ul className="features-list mb-4">
-                <li className="mb-3 fs-5">Superior cushioning and protective properties</li>
-                <li className="mb-3 fs-5">100% recyclable and environmentally friendly</li>
-                <li className="mb-3 fs-5">Excellent resistance to chemicals, water, and moisture</li>
-                <li className="mb-3 fs-5">Customizable density, thickness, and dimensions</li>
-                <li className="fs-5">Cost-effective packaging solution</li>
+              <h4 className="mb-3" style={{fontSize: isMobile ? '1.3rem' : '1.5rem'}}>Why Choose Our EPE Foam?</h4>
+              <ul className="features-list mb-3">
+                <li className="mb-2" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>Superior cushioning and protective properties</li>
+                <li className="mb-2" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>100% recyclable and environmentally friendly</li>
+                <li className="mb-2" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>Excellent resistance to chemicals, water, and moisture</li>
+                <li className="mb-2" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>Customizable density, thickness, and dimensions</li>
+                <li style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>Cost-effective packaging solution</li>
               </ul>
-              <p className="mt-4 fs-5">
+              <p className="mt-3" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 Our commitment to quality is reflected in our ISO 9001:2015 certification and client retention
                 rate of over 95%. We continuously invest in R&D to develop innovative foam solutions that meet
                 evolving market demands while reducing environmental impact.
@@ -283,26 +261,27 @@ const Home = () => {
     </section>
   );
 
-  // New Template Photo Sections
+  // Template Photo Sections with responsive design
   const TemplateSection1 = () => (
-    <section className="py-5 bg-light">
+    <section className={isMobile ? "py-4 bg-light" : "py-5 bg-light"}>
       <Container>
-        <h2 className="section-title text-center mb-5">EPE Foam Applications</h2>
-        <Row className="g-4">
-          <Col md={4}>
+        <h2 className="section-title text-center mb-4">EPE Foam Applications</h2>
+        <Row className="g-3">
+          <Col md={4} className="mb-3">
             <Card className="h-100 border-0 shadow-sm">
               <Card.Img 
                 variant="top" 
                 src="https://5.imimg.com/data5/SELLER/Default/2024/4/412322962/UY/NN/OM/77241131/epe-hd-foam-sheet-1000x1000.jpg" 
-                style={{ height: '250px', objectFit: 'cover' }}
+                style={{ height: isMobile ? '180px' : '250px', objectFit: 'cover' }}
               />
-              <Card.Body>
-                <Card.Title>Packaging Solutions</Card.Title>
-                <Card.Text>
+              <Card.Body className="p-3">
+                <Card.Title style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Packaging Solutions</Card.Title>
+                <Card.Text style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                   High-quality EPE foam for protecting fragile items during shipping and handling.
                 </Card.Text>
                 <Button 
                   variant="primary" 
+                  size={isMobile ? "sm" : "md"}
                   onClick={() => openProductDetails({
                     title: "Packaging Solutions",
                     img: "https://5.imimg.com/data5/SELLER/Default/2024/4/412322962/UY/NN/OM/77241131/epe-hd-foam-sheet-1000x1000.jpg",
@@ -317,20 +296,21 @@ const Home = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col md={4}>
+          <Col md={4} className="mb-3">
             <Card className="h-100 border-0 shadow-sm">
               <Card.Img 
                 variant="top" 
                 src="https://m.media-amazon.com/images/I/71iHgQ+TztL._AC_SL1500_.jpg" 
-                style={{ height: '250px', objectFit: 'cover' }}
+                style={{ height: isMobile ? '180px' : '250px', objectFit: 'cover' }}
               />
-              <Card.Body>
-                <Card.Title>Insulation Materials</Card.Title>
-                <Card.Text>
+              <Card.Body className="p-3">
+                <Card.Title style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Insulation Materials</Card.Title>
+                <Card.Text style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                   Thermal and acoustic insulation for pipes, HVAC systems, and building applications.
                 </Card.Text>
                 <Button 
                   variant="primary" 
+                  size={isMobile ? "sm" : "md"}
                   onClick={() => openProductDetails({
                     title: "Insulation Materials",
                     img: "https://m.media-amazon.com/images/I/71iHgQ+TztL._AC_SL1500_.jpg",
@@ -345,20 +325,21 @@ const Home = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col md={4}>
+          <Col md={4} className="mb-3">
             <Card className="h-100 border-0 shadow-sm">
               <Card.Img 
                 variant="top" 
                 src="https://www.furnituredirect.com.my/wp-content/uploads/2024/01/DREAMCATCHER-CLOUD-7.jpg" 
-                style={{ height: '250px', objectFit: 'cover' }}
+                style={{ height: isMobile ? '180px' : '250px', objectFit: 'cover' }}
               />
-              <Card.Body>
-                <Card.Title>Custom Die-Cut Foam</Card.Title>
-                <Card.Text>
+              <Card.Body className="p-3">
+                <Card.Title style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Custom Die-Cut Foam</Card.Title>
+                <Card.Text style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                   Precision-cut foam shapes tailored to your specific product requirements.
                 </Card.Text>
                 <Button 
                   variant="primary" 
+                  size={isMobile ? "sm" : "md"}
                   onClick={() => openProductDetails({
                     title: "Custom Die-Cut Foam",
                     img: "https://www.furnituredirect.com.my/wp-content/uploads/2024/01/DREAMCATCHER-CLOUD-7.jpg",
@@ -379,29 +360,29 @@ const Home = () => {
   );
 
   const TemplateSection2 = () => (
-    <section className="py-5">
+    <section className={isMobile ? "py-4" : "py-5"}>
       <Container>
-        <h2 className="section-title text-center mb-5">Our Manufacturing Process</h2>
-        <Row className="align-items-center g-4">
+        <h2 className="section-title text-center mb-4">Our Manufacturing Process</h2>
+        <Row className="align-items-center g-3">
           <Col md={6}>
-            <div className="process-step">
+            <div className="process-step mb-4">
               <div className="step-number">1</div>
-              <h4>Material Preparation</h4>
-              <p>
+              <h4 style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Material Preparation</h4>
+              <p style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 High-quality polyethylene resin is mixed with additives and colorants to create the perfect foam formulation.
               </p>
             </div>
-            <div className="process-step">
+            <div className="process-step mb-4">
               <div className="step-number">2</div>
-              <h4>Extrusion</h4>
-              <p>
+              <h4 style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Extrusion</h4>
+              <p style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 The material is melted and expanded through our German-engineered extrusion lines to create consistent foam sheets.
               </p>
             </div>
             <div className="process-step">
               <div className="step-number">3</div>
-              <h4>Quality Control</h4>
-              <p>
+              <h4 style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Quality Control</h4>
+              <p style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 Every batch undergoes rigorous testing for density, thickness, and performance characteristics.
               </p>
             </div>
@@ -411,7 +392,12 @@ const Home = () => {
               src="https://lzjinlida.com/images/hero-bg.jpg" 
               alt="Manufacturing Process" 
               className="img-fluid rounded shadow"
-              style={{ height: '400px', width: '100%', objectFit: 'cover' }}
+              style={{ 
+                height: isMobile ? '250px' : '400px', 
+                width: '100%', 
+                objectFit: 'cover',
+                marginTop: isMobile ? '20px' : '0'
+              }}
             />
           </Col>
         </Row>
@@ -420,39 +406,39 @@ const Home = () => {
   );
 
   const TemplateSection3 = () => (
-    <section className="py-5 bg-light">
+    <section className={isMobile ? "py-4 bg-light" : "py-5 bg-light"}>
       <Container>
-        <h2 className="section-title text-center mb-5">Why Choose Us</h2>
-        <Row className="g-4">
-          <Col md={4}>
-            <div className="feature-card p-4 text-center h-100">
+        <h2 className="section-title text-center mb-4">Why Choose Us</h2>
+        <Row className="g-3">
+          <Col md={4} className="mb-3">
+            <div className="feature-card p-3 text-center h-100">
               <div className="feature-icon mb-3">
-                <i className="bi bi-award fs-1 text-primary"></i>
+                <BiAward className="fs-1 text-primary" />
               </div>
-              <h4>Quality Assurance</h4>
-              <p>
+              <h4 style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Quality Assurance</h4>
+              <p style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 ISO 9001:2015 certified manufacturing with strict quality control at every stage.
               </p>
             </div>
           </Col>
-          <Col md={4}>
-            <div className="feature-card p-4 text-center h-100">
+          <Col md={4} className="mb-3">
+            <div className="feature-card p-3 text-center h-100">
               <div className="feature-icon mb-3">
-                <i className="bi bi-gear fs-1 text-primary"></i>
+                <BiCog className="fs-1 text-primary" />
               </div>
-              <h4>Advanced Technology</h4>
-              <p>
+              <h4 style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Advanced Technology</h4>
+              <p style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 State-of-the-art German machinery for consistent, high-performance foam products.
               </p>
             </div>
           </Col>
-          <Col md={4}>
-            <div className="feature-card p-4 text-center h-100">
+          <Col md={4} className="mb-3">
+            <div className="feature-card p-3 text-center h-100">
               <div className="feature-icon mb-3">
-                <i className="bi bi-people fs-1 text-primary"></i>
+                <BiGroup className="fs-1 text-primary" />
               </div>
-              <h4>Expert Team</h4>
-              <p>
+              <h4 style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Expert Team</h4>
+              <p style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                 Experienced professionals with deep knowledge of foam manufacturing and applications.
               </p>
             </div>
@@ -462,12 +448,12 @@ const Home = () => {
     </section>
   );
   
-  // Enhanced Products section with better card spacing
+  // Enhanced Products section with responsive design
   const ProductsSection = () => (
-    <section className="py-6 bg-light" id="products">
+    <section className={isMobile ? "py-4 bg-light" : "py-6 bg-light"} id="products">
       <Container>
-        <h2 className="section-title text-center mb-5">Our Raw Materials</h2>
-        <Row className="g-4 justify-content-center mb-6">
+        <h2 className="section-title text-center mb-4">Our Raw Materials</h2>
+        <Row className="g-3 justify-content-center mb-5">
           {[
             {
               img: "https://themanufacturer-cdn-1.s3.eu-west-2.amazonaws.com/wp-content/uploads/2019/01/14113757/Untitled-5-1024x713.jpg",
@@ -498,31 +484,33 @@ const Home = () => {
               specifications: "Recycled Content: Up to 30%, Contamination: <0.1%, Melt Flow: Compatible with virgin resin"
             }
           ].map((item, index) => (
-            <Col lg={3} md={6} key={index}>
+            <Col lg={3} md={6} key={index} className="mb-3">
               <Card className="h-100 material-card border-0 shadow-sm">
                 <div className="card-img-container">
-                  <Card.Img variant="top" src={item.img} style={{ height: '200px', objectFit: 'cover' }} />
+                  <Card.Img variant="top" src={item.img} style={{ height: isMobile ? '150px' : '200px', objectFit: 'cover' }} />
                   <div className="overlay-content d-flex align-items-center justify-content-center">
                     <Button 
                       variant="outline-light" 
-                      className="rounded-pill px-4"
+                      size={isMobile ? "sm" : "md"}
+                      className="rounded-pill px-3"
                       onClick={() => openMaterialDetails(item)}
                     >
                       View Details
                     </Button>
                   </div>
                 </div>
-                <Card.Body className="p-4">
-                  <Card.Title className="mb-3 fs-5">{item.title}</Card.Title>
-                  <Card.Text className="text-muted">{item.desc}</Card.Text>
+                <Card.Body className="p-3">
+                  <Card.Title className="mb-2" style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>{item.title}</Card.Title>
+                  <Card.Text className="text-muted" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>{item.desc}</Card.Text>
                 </Card.Body>
                 <Card.Footer className="bg-transparent border-0 pt-0">
                   <Button 
                     variant="link" 
                     className="text-primary p-0 fw-bold"
+                    style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}
                     onClick={() => openMaterialDetails(item)}
                   >
-                    Learn More →
+                    Learn More <BiChevronRight />
                   </Button>
                 </Card.Footer>
               </Card>
@@ -530,8 +518,8 @@ const Home = () => {
           ))}
         </Row>
         
-        <h2 className="section-title text-center my-5">Our Products</h2>
-        <Row className="g-4 justify-content-center">
+        <h2 className="section-title text-center my-4">Our Products</h2>
+        <Row className="g-3 justify-content-center">
           {[
             {
               id: 1,
@@ -570,27 +558,30 @@ const Home = () => {
               applications: "HVAC systems, plumbing"
             }
           ].map((item, index) => (
-            <Col lg={3} md={6} key={index}>
+            <Col lg={3} md={6} key={index} className="mb-3">
               <Card className="h-100 product-card border-0 shadow-sm">
                 <div className="card-img-container">
-                  <Card.Img variant="top" src={item.img} style={{ height: '200px', objectFit: 'cover' }} />
+                  <Card.Img variant="top" src={item.img} style={{ height: isMobile ? '150px' : '200px', objectFit: 'cover' }} />
                   <div className="overlay-content d-flex align-items-center justify-content-center">
                     <Button 
                       variant="outline-light" 
-                      className="rounded-pill px-4"
+                      size={isMobile ? "sm" : "md"}
+                      className="rounded-pill px-3"
                       onClick={() => openProductDetails(item)}
                     >
                       View Details
                     </Button>
                   </div>
                 </div>
-                <Card.Body className="p-4 d-flex flex-column">
-                  <Card.Title className="mb-3 fs-5">{item.title}</Card.Title>
-                  <Card.Text className="mb-3 text-muted">{item.desc}</Card.Text>
-                  <Card.Text className="fw-bold text-primary mb-3">{item.price}</Card.Text>
+                <Card.Body className="p-3 d-flex flex-column">
+                  <Card.Title className="mb-2" style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>{item.title}</Card.Title>
+                  <Card.Text className="mb-2 text-muted" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>{item.desc}</Card.Text>
+                  <Card.Text className="fw-bold text-primary mb-2" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{item.price}</Card.Text>
                   <Button 
                     variant="outline-primary" 
-                    className="mt-auto rounded-pill px-4"
+                    size={isMobile ? "sm" : "md"}
+                    className="mt-auto rounded-pill px-3"
+                    style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}
                     onClick={handlePlaceOrder}
                   >
                     Place Order
@@ -604,12 +595,12 @@ const Home = () => {
     </section>
   );
   
-  // Enhanced Machinery section with consistent card height
+  // Enhanced Machinery section with responsive design
   const MachinerySection = () => (
-    <section className="py-6" id="machinery">
+    <section className={isMobile ? "py-4" : "py-6"} id="machinery">
       <Container>
-        <h2 className="section-title text-center mb-5">Our Machinery</h2>
-        <Row className="g-4 justify-content-center">
+        <h2 className="section-title text-center mb-4">Our Machinery</h2>
+        <Row className="g-3 justify-content-center">
           {[
             {
               img: "https://lzjinlida.com/images/hero-bg.jpg",
@@ -664,31 +655,33 @@ const Home = () => {
               ]
             }
           ].map((item, index) => (
-            <Col lg={3} md={6} key={index}>
+            <Col lg={3} md={6} key={index} className="mb-3">
               <Card className="h-100 machinery-card border-0 shadow-sm">
                 <div className="card-img-container">
-                  <Card.Img variant="top" src={item.img} style={{ height: '200px', objectFit: 'cover' }} />
+                  <Card.Img variant="top" src={item.img} style={{ height: isMobile ? '150px' : '200px', objectFit: 'cover' }} />
                   <div className="overlay-content d-flex align-items-center justify-content-center">
                     <Button 
                       variant="outline-light" 
-                      className="rounded-pill px-4"
+                      size={isMobile ? "sm" : "md"}
+                      className="rounded-pill px-3"
                       onClick={() => openMachineryDetails(item)}
                     >
                       View Details
                     </Button>
                   </div>
                 </div>
-                <Card.Body className="p-4">
-                  <Card.Title className="mb-3 fs-5">{item.title}</Card.Title>
-                  <Card.Text className="text-muted">{item.desc}</Card.Text>
+                <Card.Body className="p-3">
+                  <Card.Title className="mb-2" style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>{item.title}</Card.Title>
+                  <Card.Text className="text-muted" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>{item.desc}</Card.Text>
                 </Card.Body>
                 <Card.Footer className="bg-transparent border-0 pt-0">
                   <Button 
                     variant="link" 
                     className="text-primary p-0 fw-bold"
+                    style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}
                     onClick={() => openMachineryDetails(item)}
                   >
-                    Learn More →
+                    Learn More <BiChevronRight />
                   </Button>
                 </Card.Footer>
               </Card>
@@ -699,66 +692,76 @@ const Home = () => {
     </section>
   );
 
-  // Compact Footer
+  // Compact Footer with responsive design
   const Footer = () => (
     <footer className="bg-dark text-white py-4">
       <Container>
         <Row>
           <Col lg={4} className="mb-4 mb-lg-0">
-            <h5 className="text-warning mb-3">Infinite Pvt. Ltd.</h5>
-            <p className="mb-3 fs-6">
+            <h5 className="text-warning mb-3" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Infinite Pvt. Ltd.</h5>
+            <p className="mb-3" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>
               Innovative foam solutions for packaging, insulation, and protection needs. 
               Quality manufacturing since 2022.
             </p>
             <div className="social-icons mt-3">
-              <a href="#" className="text-white me-3"><BiLogoFacebook /><i className="bi bi-facebook"></i></a>
-              <a href="#" className="text-white me-3"><i className="bi bi-twitter"><BiLogoTwitter /></i></a>
-              <a href="#" className="text-white me-3"><i className="bi bi-linkedin"><BiLogoLinkedin /></i></a>
-              <a href="#" className="text-white"><i className="bi bi-instagram"><BiLogoInstagram /></i></a>
+              <a href="#" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+                <BiLogoFacebook />
+              </a>
+              <a href="#" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+                <BiLogoTwitter />
+              </a>
+              <a href="#" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+                <BiLogoLinkedin />
+              </a>
+              <a href="#" className="text-white p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+                <BiLogoInstagram />
+              </a>
             </div>
           </Col>
           <Col lg={4} className="mb-4 mb-lg-0 ps-lg-4">
-            <h5 className="text-warning mb-3">Quick Links</h5>
+            <h5 className="text-warning mb-3" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Quick Links</h5>
             <ul className="list-unstyled">
-              <li className="mb-2"><a href="#home" className="text-white">Home</a></li>
-              <li className="mb-2"><a href="#about" className="text-white">About Us</a></li>
-              <li className="mb-2"><a href="#products" className="text-white">Products</a></li>
-              <li className="mb-2"><a href="#machinery" className="text-white">Machinery</a></li>
-              <li><a href="/gallery" className="text-white">Place Order</a></li>
+              <li className="mb-2"><a href="#home" className="text-white" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>Home</a></li>
+              <li className="mb-2"><a href="#about" className="text-white" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>About Us</a></li>
+              <li className="mb-2"><a href="#products" className="text-white" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>Products</a></li>
+              <li className="mb-2"><a href="#machinery" className="text-white" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>Machinery</a></li>
+              <li><a href="/gallery" className="text-white" style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>Place Order</a></li>
             </ul>
           </Col>
           <Col lg={4} className="ps-lg-4">
-            <h5 className="text-warning mb-3">Contact Us</h5>
-            <address>
-              <p className="mb-2 fs-6"><i className="bi bi-geo-alt-fill me-2 text-primary"></i> GIDC, Halol, Gujarat, India</p>
-              <p className="mb-2 fs-6"><i className="bi bi-telephone-fill me-2 text-primary"></i> +91 9876543210</p>
-              <p className="mb-2 fs-6"><i className="bi bi-envelope-fill me-2 text-primary"></i> info@epefoam.com</p>
-              <p className="fs-6"><i className="bi bi-clock-fill me-2 text-primary"></i> Mon-Sat: 9:00 AM - 6:00 PM</p>
+            <h5 className="text-warning mb-3" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>Contact Us</h5>
+            <address style={{fontSize: isMobile ? '0.85rem' : '0.9rem'}}>
+              <p className="mb-2"><BiMap className="me-2 text-primary" /> GIDC, Halol, Gujarat, India</p>
+              <p className="mb-2"><BiPhone className="me-2 text-primary" /> +91 9876543210</p>
+              <p className="mb-2"><BiEnvelope className="me-2 text-primary" /> info@epefoam.com</p>
+              <p><BiTime className="me-2 text-primary" /> Mon-Sat: 9:00 AM - 6:00 PM</p>
             </address>
           </Col>
         </Row>
-        <hr className="my-4" />
+        <hr className="my-3" />
         <Row>
           <Col className="text-center">
-            <p className="mb-0 fs-6">&copy; {new Date().getFullYear()} Infinite Pvt. Ltd. All Rights Reserved.</p>
+            <p className="mb-0" style={{fontSize: isMobile ? '0.8rem' : '0.9rem'}}>
+              &copy; {new Date().getFullYear()} Infinite Pvt. Ltd. All Rights Reserved.
+            </p>
           </Col>
         </Row>
       </Container>
     </footer>
   );
   
-  // Product Details Modal with better spacing
+  // Product Details Modal with responsive design
   const ProductDetailsModal = () => (
     <Modal show={showProductModal} onHide={closeProductModal} size="lg" centered>
       {selectedProduct && (
         <>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title className="fs-3">{selectedProduct.title}</Modal.Title>
+            <Modal.Title style={{fontSize: isMobile ? '1.3rem' : '1.5rem'}}>{selectedProduct.title}</Modal.Title>
           </Modal.Header>
-          <Modal.Body className="py-4">
+          <Modal.Body className="py-3">
             <Row>
               <Col md={6}>
-                <div className="mb-4 rounded-3 overflow-hidden">
+                <div className="mb-3 rounded-3 overflow-hidden">
                   <img 
                     src={selectedProduct.img} 
                     alt={selectedProduct.title} 
@@ -767,21 +770,22 @@ const Home = () => {
                 </div>
               </Col>
               <Col md={6}>
-                <h4 className="text-primary mb-4">{selectedProduct.title}</h4>
-                <p className="mb-4 fs-5">{selectedProduct.desc}</p>
-                <div className="mb-4">
-                  <h5>Specifications</h5>
-                  <p className="text-muted fs-5">{selectedProduct.specs}</p>
+                <h4 className="text-primary mb-3" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>{selectedProduct.title}</h4>
+                <p className="mb-3" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedProduct.desc}</p>
+                <div className="mb-3">
+                  <h5 style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>Specifications</h5>
+                  <p className="text-muted" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedProduct.specs}</p>
                 </div>
-                <div className="mb-4">
-                  <h5>Applications</h5>
-                  <p className="text-muted fs-5">{selectedProduct.applications}</p>
+                <div className="mb-3">
+                  <h5 style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>Applications</h5>
+                  <p className="text-muted" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedProduct.applications}</p>
                 </div>
-                <div className="d-flex justify-content-between align-items-center mt-5">
-                  <h4 className="text-primary mb-0">{selectedProduct.price}</h4>
+                <div className="d-flex justify-content-between align-items-center mt-4">
+                  <h4 className="text-primary mb-0" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>{selectedProduct.price}</h4>
                   <Button 
                     variant="primary" 
-                    className="px-4 py-2 rounded-pill"
+                    size={isMobile ? "sm" : "md"}
+                    className="px-3 rounded-pill"
                     onClick={() => {
                       closeProductModal();
                       handlePlaceOrder();
@@ -794,7 +798,7 @@ const Home = () => {
             </Row>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button variant="outline-secondary" onClick={closeProductModal} className="rounded-pill px-4">
+            <Button variant="outline-secondary" onClick={closeProductModal} className="rounded-pill px-3" size={isMobile ? "sm" : "md"}>
               Close
             </Button>
           </Modal.Footer>
@@ -803,18 +807,18 @@ const Home = () => {
     </Modal>
   );
 
-  // Material Details Modal with consistent styling
+  // Material Details Modal with responsive design
   const MaterialDetailsModal = () => (
     <Modal show={showMaterialModal} onHide={closeMaterialModal} size="lg" centered>
       {selectedMaterial && (
         <>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title className="fs-3">{selectedMaterial.title}</Modal.Title>
+            <Modal.Title style={{fontSize: isMobile ? '1.3rem' : '1.5rem'}}>{selectedMaterial.title}</Modal.Title>
           </Modal.Header>
-          <Modal.Body className="py-4">
+          <Modal.Body className="py-3">
             <Row>
               <Col md={6}>
-                <div className="mb-4 rounded-3 overflow-hidden">
+                <div className="mb-3 rounded-3 overflow-hidden">
                   <img 
                     src={selectedMaterial.img} 
                     alt={selectedMaterial.title} 
@@ -823,17 +827,17 @@ const Home = () => {
                 </div>
               </Col>
               <Col md={6}>
-                <h4 className="text-primary mb-4">{selectedMaterial.title}</h4>
-                <p className="mb-4 fs-5">{selectedMaterial.details}</p>
-                <div className="mb-4">
-                  <h5>Specifications</h5>
-                  <p className="text-muted fs-5">{selectedMaterial.specifications}</p>
+                <h4 className="text-primary mb-3" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>{selectedMaterial.title}</h4>
+                <p className="mb-3" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedMaterial.details}</p>
+                <div className="mb-3">
+                  <h5 style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>Specifications</h5>
+                  <p className="text-muted" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedMaterial.specifications}</p>
                 </div>
               </Col>
             </Row>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button variant="outline-secondary" onClick={closeMaterialModal} className="rounded-pill px-4">
+            <Button variant="outline-secondary" onClick={closeMaterialModal} className="rounded-pill px-3" size={isMobile ? "sm" : "md"}>
               Close
             </Button>
           </Modal.Footer>
@@ -842,18 +846,18 @@ const Home = () => {
     </Modal>
   );
 
-  // Machinery Details Modal with improved layout
+  // Machinery Details Modal with responsive design
   const MachineryDetailsModal = () => (
     <Modal show={showMachineryModal} onHide={closeMachineryModal} size="lg" centered>
       {selectedMachinery && (
         <>
           <Modal.Header closeButton className="border-0 pb-0">
-            <Modal.Title className="fs-3">{selectedMachinery.title}</Modal.Title>
+            <Modal.Title style={{fontSize: isMobile ? '1.3rem' : '1.5rem'}}>{selectedMachinery.title}</Modal.Title>
           </Modal.Header>
-          <Modal.Body className="py-4">
+          <Modal.Body className="py-3">
             <Row>
               <Col md={6}>
-                <div className="mb-4 rounded-3 overflow-hidden">
+                <div className="mb-3 rounded-3 overflow-hidden">
                   <img 
                     src={selectedMachinery.img} 
                     alt={selectedMachinery.title} 
@@ -862,17 +866,17 @@ const Home = () => {
                 </div>
               </Col>
               <Col md={6}>
-                <h4 className="text-primary mb-4">{selectedMachinery.title}</h4>
-                <p className="mb-4 fs-5">{selectedMachinery.details}</p>
-                <div className="mb-4">
-                  <h5>Specifications</h5>
-                  <p className="text-muted fs-5">{selectedMachinery.specifications}</p>
+                <h4 className="text-primary mb-3" style={{fontSize: isMobile ? '1.1rem' : '1.25rem'}}>{selectedMachinery.title}</h4>
+                <p className="mb-3" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedMachinery.details}</p>
+                <div className="mb-3">
+                  <h5 style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>Specifications</h5>
+                  <p className="text-muted" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>{selectedMachinery.specifications}</p>
                 </div>
-                <div className="mb-4">
-                  <h5>Key Features</h5>
-                  <ul className="text-muted fs-5">
+                <div className="mb-3">
+                  <h5 style={{fontSize: isMobile ? '1rem' : '1.1rem'}}>Key Features</h5>
+                  <ul className="text-muted" style={{fontSize: isMobile ? '0.9rem' : '1rem'}}>
                     {selectedMachinery.features.map((feature, index) => (
-                      <li key={index} className="mb-2">{feature}</li>
+                      <li key={index} className="mb-1">{feature}</li>
                     ))}
                   </ul>
                 </div>
@@ -880,7 +884,7 @@ const Home = () => {
             </Row>
           </Modal.Body>
           <Modal.Footer className="border-0">
-            <Button variant="outline-secondary" onClick={closeMachineryModal} className="rounded-pill px-4">
+            <Button variant="outline-secondary" onClick={closeMachineryModal} className="rounded-pill px-3" size={isMobile ? "sm" : "md"}>
               Close
             </Button>
           </Modal.Footer>
@@ -942,41 +946,23 @@ const Home = () => {
           position: relative;
         }
         
-        .py-5 {
-          padding-top: 3rem;
-          padding-bottom: 3rem;
-        }
-        
-        .py-6 {
-          padding-top: 5rem;
-          padding-bottom: 5rem;
-        }
-        
-        .mb-6 {
-          margin-bottom: 5rem !important;
-        }
-        
-        .mt-6 {
-          margin-top: 5rem !important;
-        }
-        
         .section-title {
           position: relative;
           display: inline-block;
-          margin-bottom: 3rem;
+          margin-bottom: 2rem;
           color: #388b6f;
-          font-size: 2.5rem;
+          font-size: 1.8rem;
           font-weight: 600;
         }
         
         .section-title::after {
           content: '';
           position: absolute;
-          bottom: -15px;
+          bottom: -10px;
           left: 50%;
           transform: translateX(-50%);
-          width: 80px;
-          height: 4px;
+          width: 60px;
+          height: 3px;
           background: #f8b400;
           border-radius: 2px;
         }
@@ -985,13 +971,13 @@ const Home = () => {
           position: relative;
           border-radius: 12px;
           overflow: hidden;
-          box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
           transition: all 0.3s ease;
         }
         
         .about-img-container:hover {
           transform: translateY(-5px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+          box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
         
         .overlay-content {
@@ -1011,8 +997,8 @@ const Home = () => {
         
         .features-list li {
           position: relative;
-          padding-left: 35px;
-          margin-bottom: 15px;
+          padding-left: 30px;
+          margin-bottom: 12px;
         }
         
         .features-list li::before {
@@ -1022,7 +1008,7 @@ const Home = () => {
           top: 0;
           color: #388b6f;
           font-weight: bold;
-          font-size: 1.2rem;
+          font-size: 1.1rem;
         }
         
         .material-card, .product-card, .machinery-card {
@@ -1034,8 +1020,8 @@ const Home = () => {
         }
         
         .material-card:hover, .product-card:hover, .machinery-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+          transform: translateY(-8px);
+          box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
         
         .card-img-container {
@@ -1064,16 +1050,16 @@ const Home = () => {
         /* New template section styles */
         .process-step {
           position: relative;
-          padding-left: 60px;
-          margin-bottom: 30px;
+          padding-left: 50px;
+          margin-bottom: 25px;
         }
         
         .step-number {
           position: absolute;
           left: 0;
           top: 0;
-          width: 40px;
-          height: 40px;
+          width: 35px;
+          height: 35px;
           background: #388b6f;
           color: white;
           border-radius: 50%;
@@ -1081,7 +1067,7 @@ const Home = () => {
           align-items: center;
           justify-content: center;
           font-weight: bold;
-          font-size: 1.2rem;
+          font-size: 1.1rem;
         }
         
         .feature-card {
@@ -1132,25 +1118,30 @@ const Home = () => {
         }
         
         @media (max-width: 768px) {
-          .banner h1 {
-            font-size: 2.5rem;
-          }
-          
-          .banner p.lead {
-            font-size: 1.2rem;
-          }
-          
           .section-title {
-            font-size: 2rem;
+            font-size: 1.5rem;
           }
           
-          .py-5, .py-6 {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+          .section-title::after {
+            bottom: -8px;
+            width: 50px;
+            height: 2px;
           }
           
           .process-step {
-            padding-left: 50px;
+            padding-left: 40px;
+          }
+          
+          .step-number {
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+          }
+          
+          .social-icons a {
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
           }
         }
       `}

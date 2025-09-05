@@ -799,7 +799,8 @@ const styles = {
     gap: "40px",
     marginBottom: "40px",
     "@media (max-width: 768px)": {
-      gridTemplateColumns: "1fr"
+      gridTemplateColumns: "1fr",
+      gap: "20px"
     }
   },
   imageSection: {
@@ -828,7 +829,9 @@ const styles = {
     objectFit: "contain",
     borderRadius: "8px",
     "@media (max-width: 768px)": {
-      maxHeight: "300px"
+      maxHeight: "300px",
+      width: "100%",
+      height: "auto"
     }
   },
   detailsSection: {
@@ -962,6 +965,10 @@ const styles = {
     transition: "all 0.2s",
     "&:hover": {
       color: "#40916c"
+    },
+    "@media (max-width: 480px)": {
+      padding: "12px 15px",
+      fontSize: "0.9rem"
     }
   },
   activeTab: {
@@ -975,7 +982,10 @@ const styles = {
     fontSize: "1.4rem",
     color: "#333",
     marginBottom: "20px",
-    fontWeight: 600
+    fontWeight: 600,
+    "@media (max-width: 480px)": {
+      fontSize: "1.2rem"
+    }
   },
   descriptionText: {
     lineHeight: "1.7",
@@ -987,7 +997,10 @@ const styles = {
     borderCollapse: "collapse",
     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
     borderRadius: "8px",
-    overflow: "hidden"
+    overflow: "hidden",
+    "@media (max-width: 480px)": {
+      fontSize: "0.9rem"
+    }
   },
   specRow: {
     borderBottom: "1px solid #eee",
@@ -999,12 +1012,19 @@ const styles = {
     padding: "15px 20px",
     width: "30%",
     fontWeight: "500",
-    color: "##333",
-    backgroundColor: "#f1f5f9"
+    color: "#333",
+    backgroundColor: "#f1f5f9",
+    "@media (max-width: 480px)": {
+      padding: "12px 15px",
+      width: "40%"
+    }
   },
   specValue: {
     padding: "15px 20px",
-    color: "#555"
+    color: "#555",
+    "@media (max-width: 480px)": {
+      padding: "12px 15px"
+    }
   },
   reviewsHeader: {
     display: "flex",
@@ -1029,6 +1049,10 @@ const styles = {
     transition: "all 0.2s",
     "&:hover": {
       backgroundColor: "#2d6a4f"
+    },
+    "@media (max-width: 480px)": {
+      padding: "8px 15px",
+      fontSize: "0.9rem"
     }
   },
   reviewForm: {
@@ -1037,7 +1061,10 @@ const styles = {
     borderRadius: "10px",
     marginBottom: "30px",
     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-    overflow: "hidden"
+    overflow: "hidden",
+    "@media (max-width: 480px)": {
+      padding: "15px"
+    }
   },
   ratingInput: {
     marginBottom: "20px",
@@ -1100,7 +1127,10 @@ const styles = {
     borderRadius: "10px",
     padding: "20px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-    border: "1px solid #eee"
+    border: "1px solid #eee",
+    "@media (max-width: 480px)": {
+      padding: "15px"
+    }
   },
   reviewHeader: {
     display: "flex",
@@ -1194,7 +1224,10 @@ const styles = {
   relatedTitle: {
     fontSize: "1.5rem",
     color: "#333",
-    fontWeight: 600
+    fontWeight: 600,
+    "@media (max-width: 480px)": {
+      fontSize: "1.3rem"
+    }
   },
   toggleRelatedButton: {
     backgroundColor: "transparent",
@@ -1211,6 +1244,10 @@ const styles = {
     transition: "all 0.2s",
     "&:hover": {
       backgroundColor: "#edf2f7"
+    },
+    "@media (max-width: 480px)": {
+      padding: "6px 12px",
+      fontSize: "0.9rem"
     }
   },
   relatedGrid: {
@@ -1218,7 +1255,8 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
     gap: "25px",
     "@media (max-width: 480px)": {
-      gridTemplateColumns: "1fr"
+      gridTemplateColumns: "1fr",
+      gap: "15px"
     }
   },
   relatedCard: {
@@ -1245,6 +1283,9 @@ const styles = {
     "@media (max-width: 768px)": {
       height: "180px",
       padding: "15px"
+    },
+    "@media (max-width: 480px)": {
+      height: "160px"
     }
   },
   relatedImage: {
@@ -1253,6 +1294,9 @@ const styles = {
     objectFit: "contain",
     "@media (max-width: 768px)": {
       maxHeight: "150px"
+    },
+    "@media (max-width: 480px)": {
+      maxHeight: "140px"
     }
   },
   relatedInfo: {

@@ -73,7 +73,7 @@ export default function Navbar() {
   };
 
   const getNavbarPadding = () => {
-    if (windowWidth < 480) return '0.5rem 1rem';
+    if (windowWidth < 480) return '0.6rem 1rem';
     if (windowWidth < 768) return '0.8rem 1.2rem';
     return '0.8rem 1.5rem';
   };
@@ -218,17 +218,15 @@ export default function Navbar() {
                   >
                     <span style={styles.dropdownItemText}>Manufacturing & Sales Graph</span>
                   </Link>
-                   <Link
+                  <Link
                     to="/admin"
                     style={styles.dropdownItem}
                     onClick={() => setIsAboutDropdownOpen(false)}
                     tabIndex={isAboutDropdownOpen ? 0 : -1}
                   >
-                    <span style={styles.dropdownItemText}> Dashboard</span>
+                    <span style={styles.dropdownItemText}>Dashboard</span>
                   </Link>
-          
                 </div>
-                
               </div>
 
               {user ? (
@@ -245,8 +243,8 @@ export default function Navbar() {
               ) : (
                 <Link
                   to="/login"
-                    style={styles.loginLink}
-                    aria-label="Login"
+                  style={styles.loginLink}
+                  aria-label="Login"
                 >
                   <span style={styles.buttonText}>Login</span>
                 </Link>
@@ -355,7 +353,7 @@ export default function Navbar() {
                 </div>
                 <div style={{
                   ...styles.mobileDropdownItems,
-                  maxHeight: isAboutDropdownOpen ? '200px' : '0',
+                  maxHeight: isAboutDropdownOpen ? '250px' : '0',
                 }}>
                   <Link
                     to="/about"
@@ -370,6 +368,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Manufacturing & Sales Graph
+                  </Link>
+                  <Link
+                    to="/admin"
+                    style={styles.mobileDropdownItem}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Dashboard
                   </Link>
                 </div>
               </div>
@@ -645,7 +650,7 @@ const styles = {
     color: 'white',
     textDecoration: 'none',
     fontSize: '1rem',
-    padding: '1rem',
+    padding: '0.9rem 1rem',
     borderRadius: '8px',
     transition: 'all 0.2s ease',
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -669,7 +674,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '1rem',
+    padding: '0.9rem 1rem',
     cursor: 'pointer',
   },
   mobileDropdownLabel: {
@@ -695,9 +700,10 @@ const styles = {
     color: 'white',
     textDecoration: 'none',
     fontSize: '0.9rem',
-    padding: '0.9rem 1rem 0.9rem 3rem',
+    padding: '0.8rem 1rem 0.8rem 2.8rem',
     transition: 'all 0.2s ease',
     backgroundColor: 'rgba(0,0,0,0.1)',
+    borderTop: '1px solid rgba(255,255,255,0.05)',
   },
   mobileUserSection: {
     marginTop: 'auto',
@@ -709,7 +715,7 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     marginBottom: '1rem',
-    padding: '0.5rem',
+    padding: '0.8rem',
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: '8px',
   },
@@ -745,7 +751,7 @@ const styles = {
     fontSize: '1rem',
     fontWeight: '500',
     backgroundColor: 'rgba(255,255,255,0.15)',
-    padding: '1rem',
+    padding: '0.9rem',
     borderRadius: '8px',
     textAlign: 'center',
     transition: 'all 0.3s ease',
