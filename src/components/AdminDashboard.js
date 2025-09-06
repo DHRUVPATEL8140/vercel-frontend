@@ -20,16 +20,17 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [brokenImages, setBrokenImages] = useState({});
   const [editingItem, setEditingItem] = useState(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
   const [itemType, setItemType] = useState(null);
   const [itemForm, setItemForm] = useState({
     name: '',
     price: '',
     stock: '',
     description: '',
-    // Fields for different product types
     density: '',
     size: '',
     color: '',
+    image: null
   });
   const { user } = useUser();
   const navigate = useNavigate();
@@ -159,30 +160,67 @@ const AdminDashboard = () => {
     }));
   };
 
+  // Function to handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setItemForm(prev => ({
+        ...prev,
+        image: file
+      }));
+    }
+  };
+
   // Function to save item changes
   const saveItemChanges = async () => {
     try {
       let endpoint = '';
-      let data = { ...itemForm };
+      let method = 'post';
+      let data = new FormData();
       
-      // Determine endpoint and data based on item type
-      if (itemType === 'product') {
-        endpoint = `products/${editingItem.id}/`;
-      } else if (itemType === 'pillow') {
-        endpoint = `pillows/${editingItem.id}/`;
-        // Remove fields not in Pillow model
-        delete data.density;
-        delete data.size;
-      } else if (itemType === 'epeSheet') {
-        endpoint = `epe-sheets/${editingItem.id}/`;
-        // Remove fields not in EPESheet model
-        delete data.density;
-        delete data.color;
+      // Append all form fields to FormData
+      Object.keys(itemForm).forEach(key => {
+        if (itemForm[key] !== null && itemForm[key] !== undefined) {
+          data.append(key, itemForm[key]);
+        }
+      });
+      
+      // Determine endpoint and method based on whether we're adding or editing
+      if (editingItem) {
+        method = 'put';
+        if (itemType === 'product') {
+          endpoint = `products/${editingItem.id}/`;
+        } else if (itemType === 'pillow') {
+          endpoint = `pillows/${editingItem.id}/`;
+        } else if (itemType === 'epeSheet') {
+          endpoint = `epe-sheets/${editingItem.id}/`;
+        }
+      } else {
+        if (itemType === 'product') {
+          endpoint = 'products/';
+        } else if (itemType === 'pillow') {
+          endpoint = 'pillows/';
+        } else if (itemType === 'epeSheet') {
+          endpoint = 'epe-sheets/';
+        }
       }
       
-      // Update existing item
-      await api.put(endpoint, data);
-      alert('Item updated successfully!');
+      // Make the API call
+      if (method === 'put') {
+        await api.put(endpoint, data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        await api.post(endpoint, data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
+      
+      alert(editingItem ? 'Item updated successfully!' : 'Item added successfully!');
       
       // Refresh data based on active tab
       if (activeTab === 'products') {
@@ -198,6 +236,7 @@ const AdminDashboard = () => {
       
       // Reset form and editing state
       setEditingItem(null);
+      setIsAddingNew(false);
       setItemType(null);
       setItemForm({
         name: '',
@@ -207,6 +246,7 @@ const AdminDashboard = () => {
         density: '',
         size: '',
         color: '',
+        image: null
       });
     } catch (error) {
       console.error('Failed to save item:', error);
@@ -217,6 +257,7 @@ const AdminDashboard = () => {
   // Function to edit an item
   const editItem = (item, type) => {
     setEditingItem(item);
+    setIsAddingNew(false);
     setItemType(type);
     
     // Set form values based on item type
@@ -225,20 +266,49 @@ const AdminDashboard = () => {
       price: item.price || '',
       stock: item.stock || 0,
       description: item.description || '',
+      density: item.density || '',
+      size: item.size || '',
+      color: item.color || '',
+      image: null
     };
     
-    // Add type-specific fields
-    if (type === 'product') {
-      formData.density = item.density || '';
-      formData.size = item.size || '';
-      formData.color = item.color || '';
-    } else if (type === 'pillow') {
-      formData.color = item.color || '';
-    } else if (type === 'epeSheet') {
-      formData.size = item.size || '';
-    }
-    
     setItemForm(formData);
+  };
+
+  // Function to start adding a new item
+  const startAddingNewItem = (type) => {
+    setEditingItem(null);
+    setIsAddingNew(true);
+    setItemType(type);
+    
+    // Reset form
+    setItemForm({
+      name: '',
+      price: '',
+      stock: '',
+      description: '',
+      density: '',
+      size: '',
+      color: '',
+      image: null
+    });
+  };
+
+  // Function to cancel editing/adding
+  const cancelEditing = () => {
+    setEditingItem(null);
+    setIsAddingNew(false);
+    setItemType(null);
+    setItemForm({
+      name: '',
+      price: '',
+      stock: '',
+      description: '',
+      density: '',
+      size: '',
+      color: '',
+      image: null
+    });
   };
 
   // Function to delete an item
@@ -354,13 +424,18 @@ const AdminDashboard = () => {
 
   // Show loading state
   if (loading) {
-    return <div style={styles.loading}>Loading dashboard data...</div>;
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingSpinner}></div>
+        <p>Loading dashboard data...</p>
+      </div>
+    );
   }
 
   // Show access denied if not admin
   if (!user || !user.is_staff) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <div style={styles.accessDeniedContainer}>
         <h2>Access Denied</h2>
         <p>You need administrator privileges to access this page.</p>
         <button 
@@ -385,8 +460,6 @@ const AdminDashboard = () => {
         </button>
       </div>
       
-      
-      
       <div style={styles.tabs}>
         <button
           style={{
@@ -395,6 +468,7 @@ const AdminDashboard = () => {
           }}
           onClick={() => setActiveTab("overview")}
         >
+          <i className="fas fa-chart-pie" style={styles.tabIcon}></i>
           Overview
         </button>
         <button
@@ -404,6 +478,7 @@ const AdminDashboard = () => {
           }}
           onClick={() => setActiveTab("orders")}
         >
+          <i className="fas fa-shopping-cart" style={styles.tabIcon}></i>
           Orders
         </button>
         <button
@@ -413,6 +488,7 @@ const AdminDashboard = () => {
           }}
           onClick={() => setActiveTab("products")}
         >
+          <i className="fas fa-box" style={styles.tabIcon}></i>
           Products
         </button>
         <button
@@ -422,6 +498,7 @@ const AdminDashboard = () => {
           }}
           onClick={() => setActiveTab("pillows")}
         >
+          <i className="fas fa-bed" style={styles.tabIcon}></i>
           Pillows
         </button>
         <button
@@ -431,6 +508,7 @@ const AdminDashboard = () => {
           }}
           onClick={() => setActiveTab("epeSheets")}
         >
+          <i className="fas fa-layer-group" style={styles.tabIcon}></i>
           EPE Sheets
         </button>
       </div>
@@ -440,34 +518,57 @@ const AdminDashboard = () => {
           <h3 style={styles.sectionHeader}>Dashboard Overview</h3>
           <div style={styles.statsGrid}>
             <div style={styles.statCard}>
-              <h2>Products</h2>
+              <div style={styles.statIconContainer}>
+                <i className="fas fa-box" style={styles.statIcon}></i>
+              </div>
+              <h3 style={styles.statTitle}>Products</h3>
               <p style={styles.statNumber}>{stats.products}</p>
             </div>
             
             <div style={styles.statCard}>
-              <h2>Orders</h2>
+              <div style={styles.statIconContainer}>
+                <i className="fas fa-shopping-cart" style={styles.statIcon}></i>
+              </div>
+              <h3 style={styles.statTitle}>Orders</h3>
               <p style={styles.statNumber}>{stats.orders}</p>
             </div>
             
             <div style={styles.statCard}>
-              <h2>Inquiries</h2>
+              <div style={styles.statIconContainer}>
+                <i className="fas fa-question-circle" style={styles.statIcon}></i>
+              </div>
+              <h3 style={styles.statTitle}>Inquiries</h3>
               <p style={styles.statNumber}>{stats.inquiries}</p>
             </div>
             
             <div style={styles.statCard}>
-              <h2>Pillows</h2>
+              <div style={styles.statIconContainer}>
+                <i className="fas fa-bed" style={styles.statIcon}></i>
+              </div>
+              <h3 style={styles.statTitle}>Pillows</h3>
               <p style={styles.statNumber}>{stats.pillows}</p>
             </div>
             
             <div style={styles.statCard}>
-              <h2>EPE Sheets</h2>
+              <div style={styles.statIconContainer}>
+                <i className="fas fa-layer-group" style={styles.statIcon}></i>
+              </div>
+              <h3 style={styles.statTitle}>EPE Sheets</h3>
               <p style={styles.statNumber}>{stats.epeSheets}</p>
             </div>
           </div>
         </div>
       ) : activeTab === "orders" ? (
         <div style={styles.section}>
-          <h3 style={styles.sectionHeader}>Recent Orders</h3>
+          <div style={styles.sectionHeaderRow}>
+            <h3 style={styles.sectionHeader}>Recent Orders</h3>
+            <button 
+              style={styles.refreshButton}
+              onClick={() => window.location.reload()}
+            >
+              <i className="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
           {errors.orders ? (
             <div style={styles.errorCard}>
               <p>Error loading orders: {errors.orders}</p>
@@ -527,94 +628,123 @@ const AdminDashboard = () => {
         </div>
       ) : activeTab === "products" ? (
         <div style={styles.section}>
-          <h3 style={styles.sectionHeader}>Products Management</h3>
+          <div style={styles.sectionHeaderRow}>
+            <h3 style={styles.sectionHeader}>Products Management</h3>
+            <button 
+              style={styles.addButton}
+              onClick={() => startAddingNewItem('product')}
+            >
+              <i className="fas fa-plus"></i> Add New Product
+            </button>
+          </div>
           
-          {editingItem && itemType === 'product' && (
+          {(editingItem || isAddingNew) && itemType === 'product' && (
             <div style={styles.productForm}>
-              <h4>Edit Product</h4>
+              <h4 style={styles.formTitle}>{editingItem ? 'Edit Product' : 'Add New Product'}</h4>
               <div style={styles.formRow}>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Product Name"
-                  value={itemForm.name}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="number"
-                  name="price"
-                  placeholder="Price"
-                  value={itemForm.price}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Product Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Product Name"
+                    value={itemForm.name}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Price (₹)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    placeholder="Price"
+                    value={itemForm.price}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
               </div>
               <div style={styles.formRow}>
-                <input
-                  type="number"
-                  name="stock"
-                  placeholder="Stock Quantity"
-                  value={itemForm.stock}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="text"
-                  name="density"
-                  placeholder="Density"
-                  value={itemForm.density}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Stock Quantity</label>
+                  <input
+                    type="number"
+                    name="stock"
+                    placeholder="Stock Quantity"
+                    value={itemForm.stock}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Density</label>
+                  <input
+                    type="text"
+                    name="density"
+                    placeholder="Density"
+                    value={itemForm.density}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
               </div>
               <div style={styles.formRow}>
-                <input
-                  type="text"
-                  name="size"
-                  placeholder="Size"
-                  value={itemForm.size}
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Size</label>
+                  <input
+                    type="text"
+                    name="size"
+                    placeholder="Size"
+                    value={itemForm.size}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Color</label>
+                  <input
+                    type="text"
+                    name="color"
+                    placeholder="Color"
+                    value={itemForm.color}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+              </div>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Product Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={styles.formInput}
+                  />
+                </div>
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Description</label>
+                <textarea
+                  name="description"
+                  placeholder="Product Description"
+                  value={itemForm.description}
                   onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="text"
-                  name="color"
-                  placeholder="Color"
-                  value={itemForm.color}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
+                  style={styles.formTextarea}
+                  rows="4"
                 />
               </div>
-              <textarea
-                name="description"
-                placeholder="Product Description"
-                value={itemForm.description}
-                onChange={handleFormChange}
-                style={styles.formTextarea}
-              />
               <div style={styles.formActions}>
                 <button 
                   style={styles.saveButton}
                   onClick={saveItemChanges}
                 >
-                  Update Product
+                  {editingItem ? 'Update Product' : 'Add Product'}
                 </button>
                 <button 
                   style={styles.cancelButton}
-                  onClick={() => {
-                    setEditingItem(null);
-                    setItemType(null);
-                    setItemForm({
-                      name: '',
-                      price: '',
-                      stock: '',
-                      description: '',
-                      density: '',
-                      size: '',
-                      color: '',
-                    });
-                  }}
+                  onClick={cancelEditing}
                 >
                   Cancel
                 </button>
@@ -627,76 +757,99 @@ const AdminDashboard = () => {
         </div>
       ) : activeTab === "pillows" ? (
         <div style={styles.section}>
-          <h3 style={styles.sectionHeader}>Pillows Management</h3>
+          <div style={styles.sectionHeaderRow}>
+            <h3 style={styles.sectionHeader}>Pillows Management</h3>
+            <button 
+              style={styles.addButton}
+              onClick={() => startAddingNewItem('pillow')}
+            >
+              <i className="fas fa-plus"></i> Add New Pillow
+            </button>
+          </div>
           
-          {editingItem && itemType === 'pillow' && (
+          {(editingItem || isAddingNew) && itemType === 'pillow' && (
             <div style={styles.productForm}>
-              <h4>Edit Pillow</h4>
+              <h4 style={styles.formTitle}>{editingItem ? 'Edit Pillow' : 'Add New Pillow'}</h4>
               <div style={styles.formRow}>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Pillow Name"
-                  value={itemForm.name}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="number"
-                  name="price"
-                  placeholder="Price"
-                  value={itemForm.price}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Pillow Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Pillow Name"
+                    value={itemForm.name}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Price (₹)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    placeholder="Price"
+                    value={itemForm.price}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
               </div>
               <div style={styles.formRow}>
-                <input
-                  type="number"
-                  name="stock"
-                  placeholder="Stock Quantity"
-                  value={itemForm.stock}
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Stock Quantity</label>
+                  <input
+                    type="number"
+                    name="stock"
+                    placeholder="Stock Quantity"
+                    value={itemForm.stock}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Color</label>
+                  <input
+                    type="text"
+                    name="color"
+                    placeholder="Color"
+                    value={itemForm.color}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+              </div>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Pillow Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={styles.formInput}
+                  />
+                </div>
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Description</label>
+                <textarea
+                  name="description"
+                  placeholder="Pillow Description"
+                  value={itemForm.description}
                   onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="text"
-                  name="color"
-                  placeholder="Color"
-                  value={itemForm.color}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
+                  style={styles.formTextarea}
+                  rows="4"
                 />
               </div>
-              <textarea
-                name="description"
-                placeholder="Pillow Description"
-                value={itemForm.description}
-                onChange={handleFormChange}
-                style={styles.formTextarea}
-              />
               <div style={styles.formActions}>
                 <button 
                   style={styles.saveButton}
                   onClick={saveItemChanges}
                 >
-                  Update Pillow
+                  {editingItem ? 'Update Pillow' : 'Add Pillow'}
                 </button>
                 <button 
                   style={styles.cancelButton}
-                  onClick={() => {
-                    setEditingItem(null);
-                    setItemType(null);
-                    setItemForm({
-                      name: '',
-                      price: '',
-                      stock: '',
-                      description: '',
-                      density: '',
-                      size: '',
-                      color: '',
-                    });
-                  }}
+                  onClick={cancelEditing}
                 >
                   Cancel
                 </button>
@@ -709,76 +862,99 @@ const AdminDashboard = () => {
         </div>
       ) : (
         <div style={styles.section}>
-          <h3 style={styles.sectionHeader}>EPE Sheets Management</h3>
+          <div style={styles.sectionHeaderRow}>
+            <h3 style={styles.sectionHeader}>EPE Sheets Management</h3>
+            <button 
+              style={styles.addButton}
+              onClick={() => startAddingNewItem('epeSheet')}
+            >
+              <i className="fas fa-plus"></i> Add New EPE Sheet
+            </button>
+          </div>
           
-          {editingItem && itemType === 'epeSheet' && (
+          {(editingItem || isAddingNew) && itemType === 'epeSheet' && (
             <div style={styles.productForm}>
-              <h4>Edit EPE Sheet</h4>
+              <h4 style={styles.formTitle}>{editingItem ? 'Edit EPE Sheet' : 'Add New EPE Sheet'}</h4>
               <div style={styles.formRow}>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="EPE Sheet Name"
-                  value={itemForm.name}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="number"
-                  name="price"
-                  placeholder="Price"
-                  value={itemForm.price}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
-                />
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>EPE Sheet Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="EPE Sheet Name"
+                    value={itemForm.name}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Price (₹)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    placeholder="Price"
+                    value={itemForm.price}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
               </div>
               <div style={styles.formRow}>
-                <input
-                  type="number"
-                  name="stock"
-                  placeholder="Stock Quantity"
-                  value={itemForm.stock}
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Stock Quantity</label>
+                  <input
+                    type="number"
+                    name="stock"
+                    placeholder="Stock Quantity"
+                    value={itemForm.stock}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Size</label>
+                  <input
+                    type="text"
+                    name="size"
+                    placeholder="Size"
+                    value={itemForm.size}
+                    onChange={handleFormChange}
+                    style={styles.formInput}
+                  />
+                </div>
+              </div>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>EPE Sheet Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={styles.formInput}
+                  />
+                </div>
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Description</label>
+                <textarea
+                  name="description"
+                  placeholder="EPE Sheet Description"
+                  value={itemForm.description}
                   onChange={handleFormChange}
-                  style={styles.formInput}
-                />
-                <input
-                  type="text"
-                  name="size"
-                  placeholder="Size"
-                  value={itemForm.size}
-                  onChange={handleFormChange}
-                  style={styles.formInput}
+                  style={styles.formTextarea}
+                  rows="4"
                 />
               </div>
-              <textarea
-                name="description"
-                placeholder="EPE Sheet Description"
-                value={itemForm.description}
-                onChange={handleFormChange}
-                style={styles.formTextarea}
-              />
               <div style={styles.formActions}>
                 <button 
                   style={styles.saveButton}
                   onClick={saveItemChanges}
                 >
-                  Update EPE Sheet
+                  {editingItem ? 'Update EPE Sheet' : 'Add EPE Sheet'}
                 </button>
                 <button 
                   style={styles.cancelButton}
-                  onClick={() => {
-                    setEditingItem(null);
-                    setItemType(null);
-                    setItemForm({
-                      name: '',
-                      price: '',
-                      stock: '',
-                      description: '',
-                      density: '',
-                      size: '',
-                      color: '',
-                    });
-                  }}
+                  onClick={cancelEditing}
                 >
                   Cancel
                 </button>
@@ -797,11 +973,14 @@ const AdminDashboard = () => {
 // Helper function for status styling
 function getStatusStyle(status) {
   const baseStyle = {
-    padding: '4px 8px',
-    borderRadius: '12px',
+    padding: '6px 12px',
+    borderRadius: '20px',
     fontSize: '0.8rem',
-    fontWeight: '500',
-    textTransform: 'capitalize'
+    fontWeight: '600',
+    textTransform: 'capitalize',
+    display: 'inline-block',
+    minWidth: '90px',
+    textAlign: 'center'
   };
 
   switch (status?.toLowerCase()) {
@@ -838,99 +1017,113 @@ function getStatusStyle(status) {
   }
 }
 
-// Styles remain the same as in your original code
+// Enhanced styles with professional design and mobile responsiveness
 const styles = {
   container: {
-    padding: '2rem',
+    padding: '1rem',
     maxWidth: '1600px',
     margin: '0 auto',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    backgroundColor: '#f5f7f9',
-    minHeight: '100vh'
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
+    backgroundColor: '#f8fafc',
+    minHeight: '100vh',
+    boxSizing: 'border-box'
   },
   headerRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '1.5rem',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    gap: '1rem',
+    padding: '1.5rem 1rem',
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
   },
   header: {
-    color: '#2d3748',
+    color: '#1e293b',
     margin: 0,
-    borderBottom: '2px solid #40916c',
-    paddingBottom: '0.5rem'
+    fontSize: '1.8rem',
+    fontWeight: '700',
+    background: 'linear-gradient(135deg, #40916c 0%, #2d6a4f 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent'
   },
   homeButton: {
-    backgroundColor: '#6c757d',
-    color: 'white',
-    border: 'none',
+    backgroundColor: 'white',
+    color: '#40916c',
+    border: '2px solid #40916c',
     padding: '0.6rem 1.2rem',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
     fontSize: '0.9rem',
-    fontWeight: '600'
-  },
-  actions: {
-    display: 'flex',
-    gap: '1rem',
-    justifyContent: 'flex-start',
-    marginBottom: '2rem',
-  },
-  actionButton: {
-    backgroundColor: '#40916c',
-    color: 'white',
-    border: 'none',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '1rem',
     fontWeight: '600',
-    transition: 'background-color 0.2s'
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
   },
   tabs: {
     display: 'flex',
     marginBottom: '1.5rem',
-    borderBottom: '1px solid #e2e8f0',
-    flexWrap: 'wrap',
     backgroundColor: 'white',
-    borderRadius: '8px',
-    overflow: 'hidden'
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+    flexWrap: 'wrap'
   },
   tabButton: {
-    padding: '0.75rem 1.5rem',
+    padding: '1rem 1.5rem',
     backgroundColor: 'transparent',
     border: 'none',
     cursor: 'pointer',
     fontSize: '1rem',
     fontWeight: '600',
-    color: '#4a5568',
-    transition: 'all 0.2s',
-    borderBottom: '3px solid transparent'
+    color: '#64748b',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    flex: '1',
+    justifyContent: 'center',
+    minWidth: '140px'
   },
   activeTab: {
     color: '#40916c',
-    borderBottom: '3px solid #40916c',
-    backgroundColor: '#f0fff4'
+    backgroundColor: '#f0fdf4',
+    boxShadow: 'inset 0 -3px 0 #40916c'
+  },
+  tabIcon: {
+    fontSize: '1rem'
   },
   section: {
     backgroundColor: 'white',
-    borderRadius: '8px',
+    borderRadius: '12px',
     padding: '1.5rem',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
     marginBottom: '2rem'
   },
-  sectionHeader: {
-    color: '#2d3748',
+  sectionHeaderRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: '1.5rem',
-    fontSize: '1.25rem',
-    borderBottom: '1px solid #e2e8f0',
-    paddingBottom: '0.5rem'
+    flexWrap: 'wrap',
+    gap: '1rem'
+  },
+  sectionHeader: {
+    color: '#1e293b',
+    margin: 0,
+    fontSize: '1.4rem',
+    fontWeight: '600'
   },
   subHeader: {
-    color: '#2d3748',
+    color: '#1e293b',
     margin: '2rem 0 1rem 0',
-    fontSize: '1.1rem'
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    paddingBottom: '0.5rem',
+    borderBottom: '2px solid #e2e8f0'
   },
   statsGrid: {
     display: 'grid',
@@ -941,22 +1134,48 @@ const styles = {
   statCard: {
     backgroundColor: 'white',
     padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
     textAlign: 'center',
-    borderLeft: '4px solid #40916c',
-    transition: 'transform 0.2s'
+    border: '1px solid #e2e8f0',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
+  statIconContainer: {
+    width: '60px',
+    height: '60px',
+    borderRadius: '50%',
+    backgroundColor: '#f0fdf4',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '1rem'
+  },
+  statIcon: {
+    fontSize: '1.5rem',
+    color: '#40916c'
+  },
+  statTitle: {
+    margin: '0 0 0.5rem 0',
+    color: '#64748b',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
   },
   statNumber: {
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-    color: '#40916c',
-    margin: '0.5rem 0 0 0',
+    fontSize: '2.2rem',
+    fontWeight: '700',
+    color: '#1e293b',
+    margin: 0
   },
   tableContainer: {
     overflowX: 'auto',
     borderRadius: '8px',
-    border: '1px solid #e2e8f0'
+    border: '1px solid #e2e8f0',
+    marginTop: '1rem'
   },
   table: {
     width: '100%',
@@ -964,46 +1183,53 @@ const styles = {
     minWidth: '800px'
   },
   tableHeaderRow: {
-    backgroundColor: '#f7fafc',
-    borderBottom: '1px solid #e2e8f0'
+    backgroundColor: '#f8fafc'
   },
   tableHeader: {
-    padding: '12px 16px',
+    padding: '16px',
     textAlign: 'left',
-    color: '#4a5568',
+    color: '#64748b',
     fontWeight: '600',
-    fontSize: '0.875rem'
+    fontSize: '0.875rem',
+    borderBottom: '2px solid #e2e8f0'
   },
   tableRow: {
     borderBottom: '1px solid #e2e8f0',
     transition: 'background-color 0.2s'
   },
+  tableRowHover: {
+    backgroundColor: '#f8fafc'
+  },
   tableCell: {
-    padding: '12px 16px',
-    color: '#4a5568',
-    fontSize: '0.875rem',
+    padding: '16px',
+    color: '#334155',
+    fontSize: '0.9rem',
     verticalAlign: 'middle'
   },
   statusSelect: {
-    padding: '6px 10px',
-    borderRadius: '4px',
+    padding: '8px 12px',
+    borderRadius: '6px',
     border: '1px solid #cbd5e0',
-    fontSize: '0.875rem'
+    fontSize: '0.875rem',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    minWidth: '120px'
   },
   productGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: '1.5rem'
   },
   productCard: {
     border: '1px solid #e2e8f0',
-    borderRadius: '8px',
+    borderRadius: '12px',
     overflow: 'hidden',
-    transition: 'all 0.2s',
-    backgroundColor: 'white'
+    transition: 'all 0.3s ease',
+    backgroundColor: 'white',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)'
   },
   productImagePlaceholder: {
-    height: '160px',
+    height: '180px',
     backgroundColor: '#f7fafc',
     display: 'flex',
     alignItems: 'center',
@@ -1016,65 +1242,77 @@ const styles = {
     objectFit: 'cover'
   },
   imagePlaceholder: {
-    color: '#a0aec0',
-    fontSize: '0.875rem'
+    color: '#94a3b8',
+    fontSize: '0.9rem'
   },
   productInfo: {
-    padding: '1rem'
+    padding: '1.25rem'
   },
   productName: {
-    margin: '0 0 0.5rem 0',
-    color: '#2d3748',
-    fontSize: '1rem',
-    fontWeight: '600'
+    margin: '0 0 0.75rem 0',
+    color: '#1e293b',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    lineHeight: '1.4'
   },
   productPrice: {
-    margin: '0 0 0.25rem 0',
+    margin: '0 0 0.5rem 0',
     color: '#40916c',
-    fontWeight: 'bold',
-    fontSize: '1.1rem'
+    fontWeight: '700',
+    fontSize: '1.2rem'
   },
   productDetail: {
     margin: '0 0 0.25rem 0',
-    color: '#4a5568',
+    color: '#64748b',
     fontSize: '0.9rem'
   },
   productStock: {
-    margin: '0.5rem 0 0 0',
-    color: '#718096',
-    fontSize: '0.875rem'
+    margin: '0.75rem 0 0 0',
+    color: '#64748b',
+    fontSize: '0.9rem',
+    fontWeight: '500'
   },
   productActions: {
     display: 'flex',
-    gap: '0.5rem',
-    marginTop: '1rem'
+    gap: '0.75rem',
+    marginTop: '1.25rem'
   },
   editButton: {
     backgroundColor: '#40916c',
     color: 'white',
     border: 'none',
-    padding: '0.4rem 0.8rem',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.8rem',
-    fontWeight: '600'
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    flex: 1,
+    transition: 'background-color 0.2s ease'
   },
   deleteButton: {
-    backgroundColor: '#e53e3e',
+    backgroundColor: '#ef4444',
     color: 'white',
     border: 'none',
-    padding: '0.4rem 0.8rem',
-    borderRadius: '4px',
+    padding: '0.5rem 1rem',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '0.8rem',
-    fontWeight: '600'
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    flex: 1,
+    transition: 'background-color 0.2s ease'
   },
   productForm: {
-    backgroundColor: '#f7fafc',
+    backgroundColor: '#f8fafc',
     padding: '1.5rem',
-    borderRadius: '8px',
+    borderRadius: '12px',
     marginBottom: '2rem',
     border: '1px solid #e2e8f0'
+  },
+  formTitle: {
+    margin: '0 0 1.5rem 0',
+    color: '#1e293b',
+    fontSize: '1.2rem',
+    fontWeight: '600'
   },
   formRow: {
     display: 'flex',
@@ -1082,69 +1320,155 @@ const styles = {
     marginBottom: '1rem',
     flexWrap: 'wrap'
   },
+  formGroup: {
+    flex: '1 1 300px',
+    marginBottom: '1rem'
+  },
+  formLabel: {
+    display: 'block',
+    marginBottom: '0.5rem',
+    color: '#374151',
+    fontWeight: '500',
+    fontSize: '0.9rem'
+  },
   formInput: {
-    flex: 1,
-    minWidth: '200px',
+    width: '100%',
     padding: '0.75rem',
-    border: '1px solid #cbd5e0',
-    borderRadius: '4px',
-    fontSize: '1rem'
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '1rem',
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
   },
   formTextarea: {
     width: '100%',
     padding: '0.75rem',
-    border: '1px solid #cbd5e0',
-    borderRadius: '4px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
     fontSize: '1rem',
     minHeight: '100px',
     marginBottom: '1rem',
-    resize: 'vertical'
+    resize: 'vertical',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
   },
   formActions: {
     display: 'flex',
-    gap: '1rem'
+    gap: '1rem',
+    marginTop: '1.5rem'
   },
   saveButton: {
     backgroundColor: '#40916c',
     color: 'white',
     border: 'none',
     padding: '0.75rem 1.5rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '1rem',
-    fontWeight: '600'
+    fontWeight: '600',
+    transition: 'background-color 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
   },
   cancelButton: {
-    backgroundColor: '#a0aec0',
+    backgroundColor: '#94a3b8',
     color: 'white',
     border: 'none',
     padding: '0.75rem 1.5rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '1rem',
-    fontWeight: '600'
+    fontWeight: '600',
+    transition: 'background-color 0.2s ease'
+  },
+  addButton: {
+    backgroundColor: '#40916c',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '600',
+    transition: 'background-color 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+  },
+  refreshButton: {
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    padding: '0.6rem 1.2rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    transition: 'background-color 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
   },
   emptyMessage: {
-    color: '#718096',
+    color: '#94a3b8',
     textAlign: 'center',
-    padding: '2rem'
+    padding: '3rem',
+    fontSize: '1.1rem',
+    fontStyle: 'italic'
   },
-  loading: {
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem',
+    color: '#64748b'
+  },
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #40916c',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '1rem'
+  },
+  accessDeniedContainer: {
     padding: '2rem',
     textAlign: 'center',
-    color: '#4a5568'
+    maxWidth: '500px',
+    margin: '0 auto',
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+    marginTop: '2rem'
+  },
+  actionButton: {
+    backgroundColor: '#40916c',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '600',
+    transition: 'background-color 0.2s ease',
+    marginTop: '1rem'
   },
   errorCard: {
-    backgroundColor: '#fff5f5',
-    color: '#e53e3e',
+    backgroundColor: '#fef2f2',
+    color: '#b91c1c',
     padding: '1.5rem',
     borderRadius: '8px',
     textAlign: 'center',
     margin: '1rem 0',
-    border: '1px solid #fc8181'
+    border: '1px solid #fecaca'
   },
   retryButton: {
-    backgroundColor: '#e53e3e',
+    backgroundColor: '#b91c1c',
     color: 'white',
     border: 'none',
     padding: '0.5rem 1rem',
@@ -1152,8 +1476,18 @@ const styles = {
     cursor: 'pointer',
     marginTop: '1rem',
     fontWeight: '600',
-    transition: 'background-color 0.2s'
+    transition: 'background-color 0.2s ease'
   }
 };
+
+// Add keyframes for spinner animation
+const spinnerStyle = document.createElement('style');
+spinnerStyle.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(spinnerStyle);
 
 export default AdminDashboard;

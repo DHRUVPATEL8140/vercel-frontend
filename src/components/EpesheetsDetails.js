@@ -1,3 +1,14 @@
+
+
+
+
+
+
+
+
+
+
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
@@ -15,7 +26,7 @@ export function OrderForm({ sheet, onPlaceOrder, stock }) {
 
   const validateForm = () => {
     const newErrors = {};
-    if (quantity < 100 || quantity > stock) {
+    if (quantity < 50 || quantity > stock) {
       newErrors.quantity = `Quantity must be between 100 and ${stock}`;
     }
     if (!address.trim()) {

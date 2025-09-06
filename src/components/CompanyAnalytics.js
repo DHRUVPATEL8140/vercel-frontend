@@ -125,7 +125,7 @@ const styles = {
   container: {
     maxWidth: "1600px",
     margin: "0 auto",
-    padding: "15px 15px",
+    padding: "5px 5px",
     fontFamily: "'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif",
     display: "flex",
     flexDirection: "column",

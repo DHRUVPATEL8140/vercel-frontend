@@ -90,7 +90,7 @@ export default function Navbar() {
         <div style={styles.navContent}>
           <Link to="/" style={styles.brand}>
             <img
-              src={logo}
+              src="https://ph-files.imgix.net/bf5853e2-864e-4c5f-ab70-45556e701f09.png?auto=format"
               alt="Company Logo"
               style={{
                 ...styles.logo,
@@ -273,7 +273,7 @@ export default function Navbar() {
             <div style={styles.mobileMenuHeader}>
               <div style={styles.mobileBrand}>
                 <img
-                  src={logo}
+                  src="https://ph-files.imgix.net/bf5853e2-864e-4c5f-ab70-45556e701f09.png?auto=format"
                   alt="Company Logo"
                   style={styles.mobileLogo}
                 />
@@ -452,6 +452,7 @@ const styles = {
   logo: {
     width: 'auto',
     transition: 'all 0.3s ease',
+    borderRadius: '50%',
   },
   logoScrolled: {},
   brandText: {
@@ -617,7 +618,7 @@ const styles = {
   mobileLogo: {
     height: '35px',
     width: 'auto',
-    filter: 'brightness(0) invert(1)',
+    borderRadius: '50%',
   },
   mobileBrandText: {
     color: 'white',
