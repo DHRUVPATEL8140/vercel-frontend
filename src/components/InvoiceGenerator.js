@@ -44,7 +44,6 @@ export default function InvoiceGenerator({ order }) {
     const taxRate = 0.18; // 18% GST
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
-    const maxWidth = pageWidth - margin * 2;
     
     // Parse amounts as numbers
     const totalAmount = parseFloat(order.total_amount);

@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Button, Modal } from 'react-bootstrap';
 import { 
   BiEnvelope, BiPhone, BiMap, BiTime, 
   BiLogoFacebook, BiLogoTwitter, BiLogoLinkedin, BiLogoInstagram,
-  BiChevronRight, BiCheck, BiAward, BiCog, BiGroup
+  BiChevronRight, BiAward, BiCog, BiGroup
 } from "react-icons/bi";
 
 const Home = () => {
@@ -704,16 +704,16 @@ const Home = () => {
               Quality manufacturing since 2022.
             </p>
             <div className="social-icons mt-3">
-              <a href="#" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+              <a href="https://facebook.com" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
                 <BiLogoFacebook />
               </a>
-              <a href="#" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+              <a href="https://twitter.com" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
                 <BiLogoTwitter />
               </a>
-              <a href="#" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+              <a href="https://linkedin.com" className="text-white me-2 p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
                 <BiLogoLinkedin />
               </a>
-              <a href="#" className="text-white p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
+              <a href="https://instagram.com" className="text-white p-2 d-inline-block rounded-circle" style={{background: 'rgba(255,255,255,0.1)'}}>
                 <BiLogoInstagram />
               </a>
             </div>

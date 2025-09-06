@@ -65,10 +65,10 @@ export default function CompanyAnalytics() {
                 Quality manufacturing since 2022.
               </p>
               <div style={styles.socialIcons}>
-                <a href="#" style={styles.socialIcon}><BiLogoFacebook /></a>
-                <a href="#" style={styles.socialIcon}><BiLogoTwitter /></a>
-                <a href="#" style={styles.socialIcon}><BiLogoLinkedin /></a>
-                <a href="#" style={styles.socialIcon}><BiLogoInstagram /></a>
+                <a href="https://facebook.com" style={styles.socialIcon}><BiLogoFacebook /></a>
+                <a href="https://twitter.com" style={styles.socialIcon}><BiLogoTwitter /></a>
+                <a href="https://linkedin.com" style={styles.socialIcon}><BiLogoLinkedin /></a>
+                <a href="https://instagram.com" style={styles.socialIcon}><BiLogoInstagram /></a>
               </div>
             </div>
             

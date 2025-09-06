@@ -13,7 +13,6 @@ import {
 } from "react-icons/fa";
 // Removed date-fns import - using native JavaScript date formatting
 import { 
-  BiEnvelope, BiPhone, BiMap, BiTime, 
   BiLogoFacebook, BiLogoTwitter, BiLogoLinkedin, BiLogoInstagram 
 } from "react-icons/bi";
 
@@ -388,6 +387,7 @@ export default function CompanyInfoPage() {
                   <Col lg={6} className="order-lg-0">
                     <div className="ratio ratio-16x9 h-100">
                       <iframe 
+                        title="Company Location Map"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d235882.89293769634!2d73.4699867!3d22.5165537!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e2b11b7e033c1%3A0x6ddca936fb14f350!2sInfinite%20foam%20pvt%20ltd!5e0!3m2!1sen!2sin!4v1755423772493!5m2!1sen!2sin" 
                         style={{ border: 0, filter: "grayscale(20%) contrast(110%)" }} 
                         allowFullScreen
@@ -414,10 +414,10 @@ export default function CompanyInfoPage() {
                 Quality manufacturing since 2022.
               </p>
               <div className="social-icons mt-3">
-                <a href="#" className="text-white me-3"><i className="bi bi-facebook"><BiLogoFacebook /></i></a>
-                <a href="#" className="text-white me-3"><i className="bi bi-twitter"><BiLogoTwitter /></i></a>
-                <a href="#" className="text-white me-3"><i className="bi bi-linkedin"><BiLogoLinkedin /></i></a>
-                <a href="#" className="text-white"><i className="bi bi-instagram"><BiLogoInstagram /> </i></a>
+                <a href="https://facebook.com" className="text-white me-3"><i className="bi bi-facebook"><BiLogoFacebook /></i></a>
+                <a href="https://twitter.com" className="text-white me-3"><i className="bi bi-twitter"><BiLogoTwitter /></i></a>
+                <a href="https://linkedin.com" className="text-white me-3"><i className="bi bi-linkedin"><BiLogoLinkedin /></i></a>
+                <a href="https://instagram.com" className="text-white"><i className="bi bi-instagram"><BiLogoInstagram /> </i></a>
               </div>
             </Col>
             <Col lg={4} className="mb-4 mb-lg-0 ps-lg-4">
