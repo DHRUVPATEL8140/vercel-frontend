@@ -16,7 +16,6 @@ import CompanyInfoPage from "./components/CompanyInfoPage";
 import AdminDashboard from "./components/AdminDashboard";
 import CompanyAnalytics from "./components/CompanyAnalytics";
 import DebugInfo from "./components/DebugInfo";
-import BackendTest from "./components/BackendTest";
 
 function App(){
   return (  
