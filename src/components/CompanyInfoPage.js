@@ -11,7 +11,7 @@ import {
   FaTruck, FaUsers, FaFlag, FaGlobeAmericas,
   FaIndustry, FaChartLine, FaHandshake, FaAward
 } from "react-icons/fa";
-import { format } from "date-fns";
+// Removed date-fns import - using native JavaScript date formatting
 import { 
   BiEnvelope, BiPhone, BiMap, BiTime, 
   BiLogoFacebook, BiLogoTwitter, BiLogoLinkedin, BiLogoInstagram 
@@ -122,7 +122,11 @@ export default function CompanyInfoPage() {
           </Col>
           <Col md={4} className="text-md-end">
             <p className="text-muted mb-0">
-              Last updated: {updated_at ? format(new Date(updated_at), 'MMMM d, yyyy') : 'N/A'}
+              Last updated: {updated_at ? new Date(updated_at).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              }) : 'N/A'}
             </p>
           </Col>
         </Row>
