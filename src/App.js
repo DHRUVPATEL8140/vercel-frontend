@@ -15,12 +15,16 @@ import Register from "./components/Register";
 import CompanyInfoPage from "./components/CompanyInfoPage";
 import AdminDashboard from "./components/AdminDashboard";
 import CompanyAnalytics from "./components/CompanyAnalytics";
+import DebugInfo from "./components/DebugInfo";
+import BackendTest from "./components/BackendTest";
 
 function App(){
   return (  
     <UserProvider> {/* Wrap everything with UserProvider */}
       <Router>
         <Navbar />
+        <DebugInfo />
+        <BackendTest />
         <div className="container">
           <Routes>
             <Route path="/" element={<Home />} />
