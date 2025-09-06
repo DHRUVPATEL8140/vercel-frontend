@@ -13,7 +13,7 @@ const getApiBaseUrl = () => {
   // Force production backend URL for Vercel deployment
   if (window.location.hostname.includes('vercel.app')) {
     console.log("Detected Vercel deployment, using production backend");
-    return "https://infinite-backend-ab0i.onrender.com/";
+    return "https://infinite-backend-ab0i.onrender.com/api/";
   }
 
   // If REACT_APP_API_URL is set, use it
