@@ -9,19 +9,36 @@ import { motion } from "framer-motion";
 // Order Form Component
 export function OrderForm({ pillow, onPlaceOrder, stock }) {
   const [quantity, setQuantity] = useState(1);
-  const [error, setError] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (quantity < 1 || quantity > stock) {
+      newErrors.quantity = `Quantity must be between 1 and ${stock}`;
+    }
+    if (!address.trim()) {
+      newErrors.address = "Address is required";
+    }
+    if (!phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (quantity < 1 || quantity > stock) {
-      setError(`Quantity must be between 1 and ${stock}`);
-      return;
+    if (validateForm()) {
+      // Instead of placing order, open mail client and show phone number
+      const subject = encodeURIComponent(`Pillow Inquiry: ${pillow.name}`);
+      const body = encodeURIComponent(
+        `Hello,\n\nI would like to inquire about the following pillow:\n\nPillow: ${pillow.name}\nQuantity: ${quantity}\nShipping Address: ${address}\nPhone: ${phone}\n\nPlease contact me at ${phone}.\n\nThank you!`
+      );
+      window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
+      alert("For quick response, you can also call: 8140463137");
     }
-    setError("");
-    // Open Outlook or default mail client with simple subject/body
-    const subject = encodeURIComponent(`Pillow Inquiry: ${pillow.name}`);
-    const body = encodeURIComponent(`I am interested in ${pillow.name} (Quantity: ${quantity}). Please contact me.`);
-    window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -55,10 +72,47 @@ export function OrderForm({ pillow, onPlaceOrder, stock }) {
             +
           </button>
         </div>
-        {error && (
-          <span style={orderFormStyles.error}>{error}</span>
+        {errors.quantity && (
+          <span style={orderFormStyles.error}>{errors.quantity}</span>
         )}
       </div>
+
+      <div style={orderFormStyles.formGroup}>
+        <label htmlFor="address" style={orderFormStyles.label}>Shipping Address:</label>
+        <textarea
+          id="address"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          style={{ ...orderFormStyles.input, minHeight: "80px" }}
+          required
+        />
+        {errors.address && (
+          <span style={orderFormStyles.error}>{errors.address}</span>
+        )}
+      </div>
+
+      <div style={orderFormStyles.formGroup}>
+        <label htmlFor="phone" style={orderFormStyles.label}>Phone Number:</label>
+        <input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          style={orderFormStyles.input}
+          required
+        />
+        {errors.phone && (
+          <span style={orderFormStyles.error}>{errors.phone}</span>
+        )}
+      </div>
+
+      <div style={orderFormStyles.formGroup}>
+        <label style={orderFormStyles.label}>Total Amount:</label>
+        <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+          ₹{Number(pillow.price) * quantity}
+        </div>
+      </div>
+
       <button 
         type="submit" 
         style={orderFormStyles.submitButton}

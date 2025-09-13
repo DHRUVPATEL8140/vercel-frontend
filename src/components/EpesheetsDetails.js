@@ -20,19 +20,36 @@ import InvoiceGenerator from "./InvoiceGenerator";
 // Order Form Component for EPE Sheets
 export function OrderForm({ sheet, onPlaceOrder, stock }) {
   const [quantity, setQuantity] = useState(stock >= 100 ? 100 : Math.max(1, stock));
-  const [error, setError] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (quantity < 100 || quantity > stock) {
+      newErrors.quantity = `Quantity must be between 100 and ${stock}`;
+    }
+    if (!address.trim()) {
+      newErrors.address = "Address is required";
+    }
+    if (!phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (quantity < 100 || quantity > stock) {
-      setError(`Quantity must be between 100 and ${stock}`);
-      return;
+    if (validateForm()) {
+      // Instead of placing order, open mail client and show phone number
+      const subject = encodeURIComponent(`EPE Sheet Inquiry: ${sheet.name}`);
+      const body = encodeURIComponent(
+        `Hello,\n\nI would like to inquire about the following EPE Sheet:\n\nSheet: ${sheet.name}\nQuantity: ${quantity}\nShipping Address: ${address}\nPhone: ${phone}\n\nPlease contact me at ${phone}.\n\nThank you!`
+      );
+      window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
+      alert("For quick response, you can also call: 8140463137");
     }
-    setError("");
-    // Open Outlook or default mail client with simple subject/body
-    const subject = encodeURIComponent(`EPE Sheet Inquiry: ${sheet.name}`);
-    const body = encodeURIComponent(`I am interested in ${sheet.name} (Quantity: ${quantity}). Please contact me.`);
-    window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
