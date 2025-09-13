@@ -10,38 +10,19 @@ import { motion } from "framer-motion";
 // Order Form Component
 export function OrderForm({ product, onPlaceOrder, stock }) {
   const [quantity, setQuantity] = useState(1);
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState({});
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (quantity < 1 || quantity > stock) {
-      newErrors.quantity = `Quantity must be between 1 and ${stock}`;
-    }
-    if (!address.trim()) {
-      newErrors.address = "Address is required";
-    }
-    if (!phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const total_amount = Number(product.price) * quantity;
-      onPlaceOrder({
-        products: [product.id],
-        total_amount,
-        address,
-        phone,
-        quantity,
-        product: product,
-      });
+    if (quantity < 1 || quantity > stock) {
+      setError(`Quantity must be between 1 and ${stock}`);
+      return;
     }
+    setError("");
+    // Open Outlook or default mail client with simple subject/body
+    const subject = encodeURIComponent(`Product Inquiry: ${product.name}`);
+    const body = encodeURIComponent(`I am interested in ${product.name} (Quantity: ${quantity}). Please contact me.`);
+    window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -57,50 +38,16 @@ export function OrderForm({ product, onPlaceOrder, stock }) {
           onChange={(e) => setQuantity(parseInt(e.target.value))}
           style={orderFormStyles.input}
         />
-        {errors.quantity && (
-          <span style={orderFormStyles.error}>{errors.quantity}</span>
+        {error && (
+          <span style={orderFormStyles.error}>{error}</span>
         )}
       </div>
-
-      <div style={orderFormStyles.formGroup}>
-        <label htmlFor="address" style={orderFormStyles.label}>Shipping Address:</label>
-        <textarea
-          id="address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          style={{ ...orderFormStyles.input, minHeight: "80px" }}
-          required
-        />
-        {errors.address && (
-          <span style={orderFormStyles.error}>{errors.address}</span>
-        )}
-      </div>
-
-      <div style={orderFormStyles.formGroup}>
-        <label htmlFor="phone" style={orderFormStyles.label}>Phone Number:</label>
-        <input
-          id="phone"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          style={orderFormStyles.input}
-          required
-        />
-        {errors.phone && (
-          <span style={orderFormStyles.error}>{errors.phone}</span>
-        )}
-      </div>
-
-      <div style={orderFormStyles.formGroup}>
-        <label style={orderFormStyles.label}>Total Amount:</label>
-        <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-          ₹{Number(product.price) * quantity}
-        </div>
-      </div>
-
       <button type="submit" style={orderFormStyles.submitButton}>
-        Place Order
+        Send Inquiry
       </button>
+      <div style={{marginTop: '10px', color: '#333', fontSize: '0.95rem'}}>
+        Or call us directly: <b>8140463137</b>
+      </div>
     </form>
   );
 }

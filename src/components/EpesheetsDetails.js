@@ -20,38 +20,19 @@ import InvoiceGenerator from "./InvoiceGenerator";
 // Order Form Component for EPE Sheets
 export function OrderForm({ sheet, onPlaceOrder, stock }) {
   const [quantity, setQuantity] = useState(stock >= 100 ? 100 : Math.max(1, stock));
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState({});
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (quantity < 50 || quantity > stock) {
-      newErrors.quantity = `Quantity must be between 100 and ${stock}`;
-    }
-    if (!address.trim()) {
-      newErrors.address = "Address is required";
-    }
-    if (!phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const total_amount = Number(sheet.price) * quantity;
-      onPlaceOrder({
-        products: [sheet.id],
-        total_amount,
-        address,
-        phone,
-        quantity,
-        product: sheet,
-      });
+    if (quantity < 100 || quantity > stock) {
+      setError(`Quantity must be between 100 and ${stock}`);
+      return;
     }
+    setError("");
+    // Open Outlook or default mail client with simple subject/body
+    const subject = encodeURIComponent(`EPE Sheet Inquiry: ${sheet.name}`);
+    const body = encodeURIComponent(`I am interested in ${sheet.name} (Quantity: ${quantity}). Please contact me.`);
+    window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
