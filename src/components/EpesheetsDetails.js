@@ -26,7 +26,7 @@ export function OrderForm({ sheet, onPlaceOrder, stock }) {
 
   const validateForm = () => {
     const newErrors = {};
-    if (quantity < 100 || quantity > stock) {
+    if (quantity < 50 || quantity > stock) {
       newErrors.quantity = `Quantity must be between 100 and ${stock}`;
     }
     if (!address.trim()) {
@@ -42,13 +42,15 @@ export function OrderForm({ sheet, onPlaceOrder, stock }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // Instead of placing order, open mail client and show phone number
-      const subject = encodeURIComponent(`EPE Sheet Inquiry: ${sheet.name}`);
-      const body = encodeURIComponent(
-        `Hello,\n\nI would like to inquire about the following EPE Sheet:\n\nSheet: ${sheet.name}\nQuantity: ${quantity}\nShipping Address: ${address}\nPhone: ${phone}\n\nPlease contact me at ${phone}.\n\nThank you!`
-      );
-      window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
-      alert("For quick response, you can also call: 8140463137");
+      const total_amount = Number(sheet.price) * quantity;
+      onPlaceOrder({
+        products: [sheet.id],
+        total_amount,
+        address,
+        phone,
+        quantity,
+        product: sheet,
+      });
     }
   };
 
@@ -153,7 +155,7 @@ export function OrderForm({ sheet, onPlaceOrder, stock }) {
         }
       </button>
     </form>
-  );
+  );   
 }
 
 // Main EPE Sheet Details Component

@@ -408,6 +408,39 @@ export default function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* Fixed Full-Width Bottom Navigation Bar */}
+      {windowWidth <= 768 && (
+        <div style={styles.bottomNavBar}>
+          <Link to="/" style={{ ...styles.bottomNavItem, ...(window.location.pathname === '/' ? styles.activeNavItem : {}) }}>
+            <div style={styles.navItemWrapper}>
+              <span style={styles.navIcon}>🏠</span>
+              <span style={styles.navText}>Home</span>
+            </div>
+          </Link>
+          <Link to="/gallery" style={{ ...styles.bottomNavItem, ...(window.location.pathname === '/gallery' ? styles.activeNavItem : {}) }}>
+            <div style={styles.navItemWrapper}>
+              <span style={styles.navIcon}>📦</span>
+              <span style={styles.navText}>Products</span>
+            </div>
+          </Link>
+          <Link to="/about" style={{ ...styles.bottomNavItem, ...(window.location.pathname === '/about' ? styles.activeNavItem : {}) }}>
+            <div style={styles.navItemWrapper}>
+              <span style={styles.navIcon}>ℹ️</span>
+              <span style={styles.navText}>About Us</span>
+            </div>
+          </Link>
+        </div>
+      )}
+
+      {/* Add spacing between footer and product section */}
+      <div style={styles.footerSpacing}></div>
+
+      {/* Add spacing between product section and bottom navbar */}
+      <div style={styles.productSectionSpacing}></div>
+
+      {/* Add bottom spacing to main content for all formats */}
+      <div style={styles.contentSpacing}></div>
     </div>
   );
 }
@@ -757,5 +790,56 @@ const styles = {
     textAlign: 'center',
     transition: 'all 0.3s ease',
     marginTop: 'auto',
+  },
+  bottomNavBar: {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    backgroundColor: '#ffffff',
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: '0.8rem 0',
+    boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
+    zIndex: 1000,
+  },
+  bottomNavItem: {
+    color: '#40916c',
+    textDecoration: 'none',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    fontSize: '0.9rem',
+    gap: '0.3rem',
+    transition: 'all 0.3s ease',
+    padding: '0.5rem',
+    borderRadius: '12px',
+  },
+  activeNavItem: {
+    backgroundColor: '#f0f0f0',
+    transform: 'scale(1.1)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  },
+  navItemWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  navIcon: {
+    fontSize: '1.8rem',
+  },
+  navText: {
+    marginTop: '0.2rem',
+    fontSize: '0.8rem',
+  },
+  contentSpacing: {
+    height: '1rem', // Adjusted spacing to ensure proper layout for all formats
+  },
+  footerSpacing: {
+    height: '1rem', // Adjusted spacing to ensure proper layout between footer and product section
+  },
+  productSectionSpacing: {
+    height: '1rem', // Adjusted spacing to ensure proper layout between product section and bottom navbar
   },
 };
