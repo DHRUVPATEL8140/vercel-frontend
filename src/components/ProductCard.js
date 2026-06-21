@@ -149,7 +149,7 @@ const styles = {
     gap: '10px',
   },
   cartButton: {
-    backgroundColor: '#40916c',
+    backgroundColor: 'var(--primary-color)',
     color: 'white',
     border: 'none',
     width: '40px',
@@ -161,7 +161,7 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#2d6a4f',
+      backgroundColor: 'var(--primary-variant)',
       transform: 'scale(1.1)',
     },
   },
@@ -191,7 +191,7 @@ const styles = {
     gap: '5px',
   },
   newBadge: {
-    backgroundColor: '#40916c',
+    backgroundColor: 'var(--primary-color)',
     color: 'white',
     padding: '3px 8px',
     borderRadius: '12px',
@@ -212,7 +212,7 @@ const styles = {
   name: {
     margin: '0 0 8px 0',
     fontSize: '1.1rem',
-    color: '#333',
+    color: 'var(--text-dark)',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -222,7 +222,7 @@ const styles = {
     gap: '15px',
     marginBottom: '8px',
     fontSize: '0.8rem',
-    color: '#666',
+    color: 'var(--muted)',
   },
   metaItem: {
     display: 'flex',
@@ -236,7 +236,7 @@ const styles = {
   details: {
     margin: '0 0 12px 0',
     fontSize: '0.9rem',
-    color: '#666',
+    color: 'var(--muted)',
   },
   priceContainer: {
     marginBottom: '15px',
@@ -244,7 +244,7 @@ const styles = {
   price: {
     fontSize: '1.2rem',
     fontWeight: 'bold',
-    color: '#40916c',
+    color: 'var(--primary-color)',
   },
   originalPrice: {
     fontSize: '0.9rem',
@@ -260,15 +260,15 @@ const styles = {
   viewLink: {
     display: 'block',
     textAlign: 'center',
-    backgroundColor: '#f8f9fa',
-    color: '#40916c',
+    backgroundColor: 'var(--light-bg)',
+    color: 'var(--primary-color)',
     padding: '8px',
     borderRadius: '4px',
     textDecoration: 'none',
     fontWeight: '500',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#40916c',
+      backgroundColor: 'var(--primary-color)',
       color: 'white',
     },
   },

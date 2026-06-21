@@ -23,10 +23,14 @@ export const UserProvider = ({ children }) => {
     try {
       const token = localStorage.getItem("access_token");
       if (token) {
-        // Add token to API headers
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        const response = await api.get('auth/user/');
+        // Perform an authenticated GET for user info using the X-Force-Auth flag
+        // so our axios client knows to include Authorization for this specific GET.
+        const response = await api.get('auth/user/', {
+          headers: {
+            'X-Force-Auth': '1',
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setUser(response.data);
       }
     } catch (error) {
@@ -34,6 +38,7 @@ export const UserProvider = ({ children }) => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("username");
+      // ensure no lingering default auth header
       delete api.defaults.headers.common['Authorization'];
     } finally {
       setLoading(false);
@@ -42,6 +47,7 @@ export const UserProvider = ({ children }) => {
 
   const login = (token, userData) => {
     localStorage.setItem("access_token", token);
+    // keep default Authorization for non-GET requests; GETs will only send auth when forced
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(userData);
   };

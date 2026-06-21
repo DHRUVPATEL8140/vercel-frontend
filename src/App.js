@@ -17,6 +17,11 @@ import AdminDashboard from "./components/AdminDashboard";
 import CompanyAnalytics from "./components/CompanyAnalytics";
 import DebugInfo from "./components/DebugInfo";
 import BackendTest from "./components/BackendTest";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AIRecommendation from "./components/AIRecommendation";
+import RoomVisualizer from "./components/RoomVisualizer";
+import MattressSizeFinder from "./components/MattressSizeFinder";
+import DeliveryChecker from "./components/DeliveryChecker";
 
 function App(){
   return (  
@@ -37,8 +42,19 @@ function App(){
             <Route path="/about" element={<CompanyInfoPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/analytics" element={<CompanyAnalytics />} />
+            <Route path="/recommend" element={<AIRecommendation />} />
+            <Route path="/visualizer" element={<RoomVisualizer />} />
+            <Route path="/size-finder" element={<MattressSizeFinder />} />
+            <Route path="/delivery" element={<DeliveryChecker />} />
           </Routes>
         </div>
       </Router>

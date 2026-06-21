@@ -1,16 +1,6 @@
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useUser } from './UserContext';
 import api from "../api/axios";
 import { FaArrowLeft, FaStar, FaChevronDown, FaChevronUp, FaShoppingCart, FaTimes } from "react-icons/fa";
 import { MdLocalShipping, MdAssignmentReturn } from "react-icons/md";
@@ -23,6 +13,8 @@ export function OrderForm({ sheet, onPlaceOrder, stock }) {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
+  const { user } = useUser();
 
   const validateForm = () => {
     const newErrors = {};
@@ -41,6 +33,11 @@ export function OrderForm({ sheet, onPlaceOrder, stock }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!user) {
+      const redirectPath = `${window.location.pathname}${window.location.search}`;
+      navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+      return;
+    }
     if (validateForm()) {
       const total_amount = Number(sheet.price) * quantity;
       onPlaceOrder({
@@ -194,11 +191,23 @@ export default function EPESheetDetail() {
         });
         setRelatedSheets(relatedResponse.data);
 
-        // Reviews
-        const reviewsResponse = await api.get(`reviews/product_reviews/?product_id=${id}&product_type=epe_sheet`);
-        setReviews(reviewsResponse.data);
+        // Reviews (best-effort): if protected, don't prevent showing sheet details
+        try {
+          const reviewsResponse = await api.get(`reviews/product_reviews/?product_id=${id}&product_type=epe_sheet`);
+          setReviews(reviewsResponse.data);
+        } catch (revErr) {
+          console.warn('Could not load EPE sheet reviews', id, revErr);
+          setReviews([]);
+        }
       } catch (err) {
-        setError(err.message);
+        const status = err.response?.status;
+        if (status === 404) {
+          setSheet(null);
+        } else if (status === 401) {
+          setError("Unable to load EPE sheet details.");
+        } else {
+          setError(err.message || "Failed to fetch EPE sheet data");
+        }
         console.error("Failed to fetch EPE sheet data:", err);
       } finally {
         setLoading(false);

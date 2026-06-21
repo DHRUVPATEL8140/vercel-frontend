@@ -140,7 +140,7 @@ export default function ProductGallery() {
 
   // Handle product click
   const handleProductClick = (productId) => {
-    navigate(`/products/${productId}`);
+    navigate(`/product/${productId}`);
   };
 
   if (loading) return (

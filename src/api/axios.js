@@ -46,8 +46,33 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const method = (config.method || 'get').toLowerCase();
+    // If this request explicitly sets X-Force-Auth, allow Authorization to be sent.
+    const forceAuth = config.headers && (config.headers['X-Force-Auth'] || config.headers['x-force-auth']);
+
+    if (method === 'get') {
+      if (forceAuth) {
+        // ensure Authorization header is present for forced auth GET
+        if (!config.headers.Authorization && token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } else {
+        // remove any Authorization header for normal GETs to avoid accidental 401s
+        if (config.headers && config.headers.Authorization) {
+          delete config.headers.Authorization;
+        }
+      }
+    } else {
+      // non-GET requests should include Authorization when token exists
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    // Remove internal flag so it doesn't get sent to server
+    if (config.headers) {
+      delete config.headers['X-Force-Auth'];
+      delete config.headers['x-force-auth'];
     }
     return config;
   },
@@ -64,9 +89,16 @@ api.interceptors.response.use(
     
     // Handle common errors
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem("access_token");
-      window.location.href = "/login";
+      // Unauthorized - for non-GET requests, clear token and redirect to login
+      // For GET requests (public reads like product details) do not auto-redirect;
+      // let the calling component handle the error so viewing pages aren't forced to login.
+      const method = error.config?.method?.toLowerCase();
+      if (method && method !== 'get') {
+        localStorage.removeItem("access_token");
+        window.location.href = "/login";
+      } else {
+        // For GET requests, just fall through and reject so components can show errors
+      }
     }
     
     return Promise.reject(error);

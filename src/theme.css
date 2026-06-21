@@ -1,0 +1,32 @@
+:root {
+  --primary-color: #1a5f4a;
+  --primary-dark: #154034;
+  --primary-variant: #2d6a4f;
+  --secondary-color: #3a7ca5;
+  --accent-color: #d4a373;
+  --dark-color: #0f172a;
+  --light-bg: #f7f9fc;
+  --text-dark: #2c3e50;
+  --text-light: #6c757d;
+  --muted: #718096;
+}
+
+body {
+  background: var(--light-bg);
+  color: var(--text-dark);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.btn-theme-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+  color: #fff !important;
+}

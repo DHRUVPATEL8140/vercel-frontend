@@ -1,7 +1,8 @@
 // src/components/OrderForm.js
 import React, { useState } from "react";
 import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useUser } from './UserContext';
 
 export default function OrderForm({ product, onOrderCreated }) {
   const [qty, setQty] = useState(1);
@@ -10,6 +11,8 @@ export default function OrderForm({ product, onOrderCreated }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useUser();
 
   const handleQtyChange = (e) => {
     const value = Math.max(1, parseInt(e.target.value) || 1);
@@ -25,9 +28,9 @@ export default function OrderForm({ product, onOrderCreated }) {
     setError(null);
     setIsSubmitting(true);
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      navigate("/login");
+    if (!user) {
+      const redirectPath = `${location.pathname}${location.search}`;
+      navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`);
       return;
     }
 

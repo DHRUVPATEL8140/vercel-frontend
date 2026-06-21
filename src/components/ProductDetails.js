@@ -3,16 +3,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import ProductCard from "./ProductCard";
 import InvoiceGenerator from "./InvoiceGenerator";  
+import { useUser } from "./UserContext";
 import { FaArrowLeft, FaStar, FaChevronDown, FaChevronUp, FaUser } from "react-icons/fa";
 import { MdLocalShipping, MdAssignmentReturn } from "react-icons/md";
 import { motion } from "framer-motion";
 
 // Order Form Component
-export function OrderForm({ product, onPlaceOrder, stock }) {
+export function OrderForm({ product, onPlaceOrder, stock, user }) {
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
@@ -31,15 +33,24 @@ export function OrderForm({ product, onPlaceOrder, stock }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!user) {
+      const redirectPath = `${window.location.pathname}${window.location.search}`;
+      navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+      return;
+    }
+
     if (validateForm()) {
-      // Instead of placing order, open mail client and show phone number
-      const subject = encodeURIComponent(`Product Inquiry: ${product.name}`);
-      const body = encodeURIComponent(
-        `Hello,\n\nI would like to inquire about the following product:\n\nProduct: ${product.name}\nQuantity: ${quantity}\nShipping Address: ${address}\nPhone: ${phone}\n\nPlease contact me at ${phone}.\n\nThank you!`
-      );
-      window.location.href = `mailto:pateldhruv20065@gmail.com?subject=${subject}&body=${body}`;
-      // Optionally, show phone number as a message
-      alert("For quick response, you can also call: 8140463137");
+      onPlaceOrder({
+        quantity,
+        address,
+        phone,
+        products: [{
+          product_id: product.id,
+          name: product.name,
+          quantity,
+          price: product.price
+        }]
+      });
     }
   };
 
@@ -136,7 +147,7 @@ const orderFormStyles = {
     marginTop: "4px"
   },
   submitButton: {
-    backgroundColor: "#40916c",
+    backgroundColor: "var(--primary-color)",
     color: "white",
     border: "none",
     padding: "14px 20px",
@@ -202,11 +213,27 @@ export default function ProductDetails() {
         });
         setRelatedProducts(relatedResponse.data);
 
-        // Reviews
-        const reviewsResponse = await api.get(`reviews/product_reviews/?product_id=${id}`);
-        setReviews(reviewsResponse.data);
+        // Reviews (best-effort): if reviews endpoint requires auth or fails,
+        // don't block showing the product — fall back to empty reviews.
+        try {
+          const reviewsResponse = await api.get(`reviews/product_reviews/?product_id=${id}`);
+          setReviews(reviewsResponse.data);
+        } catch (revErr) {
+          console.warn('Could not load reviews for product', id, revErr);
+          setReviews([]);
+        }
       } catch (err) {
-        setError(err.message);
+        // Map common API errors to user-friendly messages
+        const status = err.response?.status;
+        if (status === 404) {
+          // product not found; keep product as null so the Not Found UI shows
+          setProduct(null);
+        } else if (status === 401) {
+          // Unauthorized for GET — do not redirect; show a neutral message
+          setError("Unable to load product details.");
+        } else {
+          setError(err.message || "Failed to fetch product data");
+        }
         console.error("Failed to fetch product data:", err);
       } finally {
         setLoading(false);
@@ -240,24 +267,30 @@ export default function ProductDetails() {
     }
   };
 
+  const { user } = useUser();
+
   const handlePlaceOrder = async (orderData) => {
     try {
       setOrderError(null);
-      const response = await api.post("orders/", {
-        products: orderData.products,
-        total_amount: orderData.total_amount,
-        address: orderData.address,
-        phone: orderData.phone
+      const response = await api.post("inquiries/", {
+        name: user?.username || localStorage.getItem("username") || "",
+        email: user?.email || "",
+        phone: orderData.phone,
+        product: product.name,
+        quantity: orderData.quantity,
+        requirements: orderData.address,
       });
-      setOrderSuccess(`Order placed successfully! Order ID: ${response.data.id}`);
-      setOrderData({ ...orderData, orderId: response.data.id });
+
+      setOrderSuccess("Inquiry sent successfully! We will contact you soon.");
+      setOrderData({ ...orderData, inquiryId: response.data.id });
     } catch (err) {
       setOrderError(
         err.response?.data?.message ||
+        err.response?.data?.detail ||
         JSON.stringify(err.response?.data) ||
-        "Failed to place order. Please try again."
+        "Failed to send inquiry. Please try again."
       );
-      console.error("Failed to place order:", err);
+      console.error("Failed to send inquiry:", err);
     }
   };
 
@@ -313,7 +346,7 @@ export default function ProductDetails() {
                   whileTap={{ scale: 0.95 }}
                   style={{
                     ...styles.thumbnail,
-                    border: index === thumbnailIndex ? "2px solid #40916c" : "1px solid #e2e8f0"
+                    border: index === thumbnailIndex ? "2px solid var(--primary-color)" : "1px solid #e2e8f0"
                   }}
                   onClick={() => handleThumbnailClick(img, index)}
                 >
@@ -381,6 +414,7 @@ export default function ProductDetails() {
             <OrderForm
               product={product}
               onPlaceOrder={handlePlaceOrder}
+              user={user}
               stock={product.stock}
             />
           </div>
@@ -618,7 +652,7 @@ export default function ProductDetails() {
               >
                 <ProductCard
                   product={product}
-                  onClick={() => navigate(`/products/${product.id}`)}
+                  onClick={() => navigate(`/product/${product.id}`)}
                 />
               </motion.div>
             ))}
@@ -629,7 +663,7 @@ export default function ProductDetails() {
       {orderSuccess && orderData && (
         <div style={modalStyles.overlay}>
           <div style={modalStyles.modal}>
-            <h2 style={{ color: "#40916c" }}>Order Successful!</h2>
+            <h2 style={{ color: "var(--primary-color)" }}>Order Successful!</h2>
             <p>{orderSuccess}</p>
             <InvoiceGenerator order={orderData} />
             <button style={modalStyles.button} onClick={closeModal}>
@@ -664,7 +698,7 @@ const modalStyles = {
   },
   button: {
     marginTop: "18px",
-    background: "#40916c",
+    background: "var(--primary-color)",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
@@ -688,7 +722,7 @@ const styles = {
     gap: "8px",
     backgroundColor: "transparent",
     border: "none",
-    color: "#40916c",
+    color: "var(--primary-color)",
     cursor: "pointer",
     fontSize: "1rem",
     marginBottom: "20px",
@@ -696,7 +730,7 @@ const styles = {
     borderRadius: "4px",
     transition: "all 0.2s",
     "&:hover": {
-      backgroundColor: "#f1f5f9"
+      backgroundColor: "var(--light-bg)"
     }
   },
   productContainer: {
@@ -709,7 +743,7 @@ const styles = {
     gap: "20px"
   },
   mainImageContainer: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "var(--light-bg)",
     borderRadius: "12px",
     padding: "20px",
     display: "flex",
@@ -782,7 +816,7 @@ const styles = {
   price: {
     fontSize: "1.6rem",
     fontWeight: "bold",
-    color: "#2d6a4f"
+    color: "var(--primary-variant)"
   },
   originalPrice: {
     fontSize: "1.1rem",
@@ -809,7 +843,7 @@ const styles = {
     alignItems: "center"
   },
   shippingInfo: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "var(--light-bg)",
     borderRadius: "10px",
     padding: "20px",
     margin: "10px 0"
@@ -823,7 +857,7 @@ const styles = {
     color: "#555"
   },
   shippingIcon: {
-    color: "#40916c",
+    color: "var(--primary-color)",
     fontSize: "1.3rem"
   },
   orderFormContainer: {
@@ -841,7 +875,7 @@ const styles = {
   },
   successMessage: {
     backgroundColor: "#f0fff4",
-    color: "#2d6a4f",
+    color: "var(--primary-variant)",
     padding: "12px",
     borderRadius: "6px",
     marginBottom: "20px",
@@ -873,8 +907,8 @@ const styles = {
     transition: "all 0.2s"
   },
   activeTab: {
-    color: "#40916c",
-    borderBottom: "3px solid #40916c"
+    color: "var(--primary-color)",
+    borderBottom: "3px solid var(--primary-color)"
   },
   tabContent: {
     marginBottom: "50px"
@@ -920,7 +954,7 @@ const styles = {
     gap: "15px"
   },
   addReviewButton: {
-    backgroundColor: "#40916c",
+    backgroundColor: "var(--primary-color)",
     color: "white",
     border: "none",
     padding: "10px 20px",
@@ -933,11 +967,11 @@ const styles = {
     gap: "8px",
     transition: "all 0.2s",
     "&:hover": {
-      backgroundColor: "#2d6a4f"
+      backgroundColor: "var(--primary-variant)"
     }
   },
   reviewForm: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "var(--light-bg)",
     padding: "25px",
     borderRadius: "10px",
     marginBottom: "30px",
@@ -985,7 +1019,7 @@ const styles = {
     marginTop: "15px"
   },
   submitButton: {
-    backgroundColor: "#40916c",
+    backgroundColor: "var(--primary-color)",
     color: "white",
     border: "none",
     padding: "12px 25px",
@@ -995,7 +1029,7 @@ const styles = {
     fontWeight: 500,
     transition: "all 0.2s",
     "&:hover": {
-      backgroundColor: "#2d6a4f"
+      backgroundColor: "var(--primary-variant)"
     }
   },
   reviewStats: {
@@ -1004,7 +1038,7 @@ const styles = {
     gap: "40px",
     marginBottom: "30px",
     padding: "20px",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "var(--light-bg)",
     borderRadius: "10px"
   },
   overallRating: {
@@ -1052,7 +1086,7 @@ const styles = {
   },
   barFill: {
     height: "100%",
-    backgroundColor: "#40916c",
+    backgroundColor: "var(--primary-color)",
     borderRadius: "4px",
     transition: "width 0.5s ease"
   },
@@ -1091,7 +1125,7 @@ const styles = {
     width: "40px",
     height: "40px",
     borderRadius: "50%",
-    backgroundColor: "#40916c",
+    backgroundColor: "var(--primary-color)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1124,7 +1158,7 @@ const styles = {
   noReviews: {
     textAlign: "center",
     padding: "40px 20px",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "var(--light-bg)",
     borderRadius: "10px"
   },
   noReviewsTitle: {
@@ -1156,8 +1190,8 @@ const styles = {
   },
   toggleRelatedButton: {
     backgroundColor: "transparent",
-    color: "#40916c",
-    border: "1px solid #40916c",
+    color: "var(--primary-color)",
+    border: "1px solid var(--primary-color)",
     padding: "8px 16px",
     borderRadius: "6px",
     cursor: "pointer",
@@ -1168,7 +1202,7 @@ const styles = {
     gap: "8px",
     transition: "all 0.2s",
     "&:hover": {
-      backgroundColor: "#f1f5f9"
+      backgroundColor: "var(--light-bg)"
     }
   },
   relatedGrid: {

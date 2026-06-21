@@ -33,7 +33,7 @@
  // src/components/Login.js
 import React, { useState } from "react";
 import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaUser, FaLock, FaSpinner } from "react-icons/fa";
 import { useUser } from './UserContext'; // Fixed import path
 
@@ -43,6 +43,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useUser(); // Use login function from context
 
   const submit = async (e) => {
@@ -60,7 +61,8 @@ export default function Login() {
       const userRes = await api.get('auth/user/');
       login(res.data.access, userRes.data); // Use login function from context
       
-      navigate("/");
+      const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
+      navigate(redirectPath, { replace: true });
     } catch (err) {
       setError(err.response?.data?.detail || "Login failed. Please check your credentials.");
       console.error("Login error:", err);
